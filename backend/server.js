@@ -1,9 +1,6 @@
 var express = require("express");
 var { graphqlHTTP } = require("express-graphql");
 var { buildSchema } = require("graphql");
-var { knex } = require("knex");
-const knexFile = require("./knexfile").development;
-const db = knex(knexFile);
 const rootFuncs = require("./rootFuncs");
 
 var schema = buildSchema(`

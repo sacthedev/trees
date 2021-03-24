@@ -1,0 +1,27 @@
+Arguments: 
+  /home/bane/.nvm/versions/node/v15.8.0/bin/node /home/bane/.nvm/versions/node/v15.8.0/bin/yarn add create-react-app --network-timeout 100000
+
+PATH: 
+  /home/bane/.nvm/versions/node/v15.8.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/mnt/c/Program Files/WindowsApps/Microsoft.WindowsTerminal_1.6.10571.0_x64__8wekyb3d8bbwe:/mnt/c/Program Files/Python38/Scripts/:/mnt/c/Program Files/Python38/:/mnt/c/Python27/:/mnt/c/Python27/Scripts:/mnt/c/Program Files (x86)/PHP/v7.4:/mnt/c/Windows/system32:/mnt/c/Windows:/mnt/c/Windows/System32/Wbem:/mnt/c/Windows/System32/WindowsPowerShell/v1.0/:/mnt/c/Windows/System32/OpenSSH/:/mnt/c/cygwin64/bin:/mnt/c/Program Files/gnuplot/bin:/mnt/c/Program Files/jdk-13.0.1_windows-x64_bin/jdk-13.0.1/bin:/mnt/c/Program Files/youtube-dl:/mnt/c/Program Files (x86)/Calibre2/:/mnt/c/Users/bane/AppData/Local/Microsoft/WindowsApps:/mnt/c/Users/bane/AppData/Local/Programs/Microsoft VS Code/bin:/mnt/c/Program Files/nodejs/:/mnt/c/ProgramData/chocolatey/bin:/mnt/c/Go/bin:/mnt/c/Program Files (x86)/Yarn/bin/:/mnt/c/Program Files/dotnet/:/mnt/c/Program Files/Git/cmd:/mnt/c/Users/bane/.windows-build-tools/python27/:/mnt/c/Users/bane/.windows-build-tools/python27:/mnt/c/Ruby27-x64/bin:/mnt/c/Users/bane/AppData/Local/Microsoft/WindowsApps:/mnt/c/Users/bane/AppData/Local/Programs/Microsoft VS Code/bin:/mnt/c/Users/bane/AppData/Roaming/npm:/mnt/c/Users/bane/AppData/Local/GitHubDesktop/bin:/mnt/c/Users/bane/go/bin:/mnt/c/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/MSBuild/Current/Bin:/mnt/c/Users/bane/AppData/Local/Yarn/bin:/mnt/c/tools/neovim/Neovim/bin:/mnt/c/Users/bane/AppData/Local/pip/cache/wheels/eb/4e/d2/a903d4184fb49e4ac06474d65715b129aee13d69f7d227e78e:/mnt/c/Users/bane/AppData/Roaming/Python/Python38/Scripts:/mnt/c/Program Files/draw.io:/mnt/c/Program Files/sqlite-tools:/mnt/c/flutter/bin:/mnt/c/Program Files/R/R-4.0.2/bin:/mnt/c/Users/bane/AppData/Roaming/TinyTeX/bin/win32:/mnt/c/Users/bane/AppData/Local/atom/bin:/mnt/c/tools/Cmder:/snap/bin
+
+Yarn version: 
+  1.22.10
+
+Node version: 
+  15.8.0
+
+Platform: 
+  linux x64
+
+Trace: 
+  Error: getaddrinfo EAI_AGAIN registry.yarnpkg.com
+      at GetAddrInfoReqWrap.onlookup [as oncomplete] (node:dns:69:26)
+
+npm manifest: 
+  No manifest
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile
