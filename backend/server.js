@@ -2,7 +2,7 @@ var express = require("express");
 var { graphqlHTTP } = require("express-graphql");
 var { buildSchema } = require("graphql");
 const rootFuncs = require("./rootFuncs");
-
+var cors = require("cors");
 var schema = buildSchema(`
     type tree {
       id: ID,
@@ -24,6 +24,7 @@ var schema = buildSchema(`
 
 var root = { ...rootFuncs };
 var app = express();
+app.use(cors());
 app.use(
   "/graphql",
   graphqlHTTP({
