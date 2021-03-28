@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useQuery, gql } from "@apollo/client";
-
+import { useQuery, useMutation, gql } from "@apollo/client";
+import NewTree from "./NewTree";
 const ALL_TREES = gql`
   query GetAllTrees {
     getAllTrees {
@@ -11,6 +11,12 @@ const ALL_TREES = gql`
   }
 `;
 
+const INSERT_TREE = gql`
+  mutation InsertTree($common_name: String, $scientific_name: String) {
+    insertTree(common_name: $common_name, scientific_name: $scientific_name)
+  }
+`;
+
 function App() {
   const [headers, setHeaders] = useState([
     "id",
@@ -18,17 +24,33 @@ function App() {
     "scientific_name",
     "",
   ]);
-  const { data, loading, error } = useQuery(ALL_TREES);
+  const { data, loading } = useQuery(ALL_TREES, {
+    pollInterval: 500,
+    fetchPolicy: "cache-and-network",
+  });
   const [trees, setTrees] = useState([{}]);
-
+  const [showModal, setShowModal] = useState("hidden");
+  const [insertTree] = useMutation(INSERT_TREE);
   useEffect(() => {
     if (!loading && data.getAllTrees) {
       setTrees(data.getAllTrees);
     }
   }, [data, loading]);
+
+  function sendNewTrees(d) {
+    console.log("sendNewTrees");
+    console.log(d);
+    insertTree({
+      variables: {
+        common_name: d.common_name,
+        scientific_name: d.scientific_name,
+      },
+    });
+  }
+
   return (
     <div className="App">
-      <div className="container flex h-screen mx-auto bg-darkblue">
+      <div className={`container flex h-screen mx-auto bg-darkblue`}>
         <div className="w-3/12 h-full border-r-2 border-gray-300 left">
           <div className="p-4 text-2xl font-semibold text-center text-white border-b-2 border-gray-300 header">
             Trees Dashboard
@@ -53,16 +75,26 @@ function App() {
           </div>
         </div>
         <div className="flex justify-center w-full right">
-          <div className="w-11/12 mt-2 right-item-holder">
+          <div className="w-11/12 mt-2 right-item-holder overflow-y-scroll">
             <div className="pt-2 rounded-lg info-area bg-lightblue">
               <div className="flex items-center justify-between p-2 text-white info-header">
                 <p>Number of trees in database: {trees.length}</p>
-                <button className="p-2 font-semibold rounded-lg bg-pink">
+                <button
+                  className="p-2 font-semibold rounded-lg bg-pink"
+                  onClick={() => {
+                    setShowModal(showModal === "hidden" ? "" : "hidden");
+                  }}
+                >
                   Add new tree
                 </button>
+                <NewTree
+                  showModal={showModal}
+                  onShowModalChange={(ret) => setShowModal(ret)}
+                  newTreeData={(ret) => sendNewTrees(ret)}
+                ></NewTree>
               </div>
               <div className="table bg-white w-full">
-                <table className="table-fixed w-full text-white">
+                <table className="w-full text-white">
                   <thead className="bg-black text-white px-5">
                     <tr>
                       {headers.map((el) => (
@@ -128,14 +160,4 @@ function App() {
     </div>
   );
 }
-/*
-{trees.map((el) => (
-                      <tr>
-                        <td>{el.id}</td>
-                        <td>{el.common_name}</td>
-                        <td>{el.scientific_name}</td>
-                      </tr>
-                    ))}
-
-        */
 export default App;
