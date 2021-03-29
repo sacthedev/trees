@@ -16,9 +16,9 @@ var schema = buildSchema(`
     }
 
     type Mutation {
-        insertTree(common_name: String, scientific_name: String): String,
-        updateTreeWithId(id: ID, common_name: String, scientific_name: String): String,
-        deleteTreeWithId(id: ID): String
+        insertTree(common_name: String, scientific_name: String): tree,
+        updateTreeWithId(id: ID, common_name: String, scientific_name: String): tree,
+        deleteTreeWithId(id: ID): ID
     }
 `);
 

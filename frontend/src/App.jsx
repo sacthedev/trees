@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useQuery, useMutation, gql } from "@apollo/client";
 import NewTree from "./NewTree";
+import UpdateTree from "./UpdateTree";
+
 const ALL_TREES = gql`
   query GetAllTrees {
     getAllTrees {
@@ -13,7 +15,35 @@ const ALL_TREES = gql`
 
 const INSERT_TREE = gql`
   mutation InsertTree($common_name: String, $scientific_name: String) {
-    insertTree(common_name: $common_name, scientific_name: $scientific_name)
+    insertTree(common_name: $common_name, scientific_name: $scientific_name) {
+      id
+      common_name
+      scientific_name
+    }
+  }
+`;
+
+const DELETE_TREE_WITH_ID = gql`
+  mutation DeleteTreeWithId($id: ID) {
+    deleteTreeWithId(id: $id)
+  }
+`;
+
+const UPDATE_TREE_WITH_ID = gql`
+  mutation UpdateTreeWithId(
+    $id: ID
+    $common_name: String
+    $scientific_name: String
+  ) {
+    updateTreeWithId(
+      id: $id
+      common_name: $common_name
+      scientific_name: $scientific_name
+    ) {
+      id
+      common_name
+      scientific_name
+    }
   }
 `;
 
@@ -25,12 +55,47 @@ function App() {
     "",
   ]);
   const { data, loading } = useQuery(ALL_TREES, {
-    pollInterval: 500,
-    fetchPolicy: "cache-and-network",
+    //fetchPolicy: "cache-and-network",
   });
   const [trees, setTrees] = useState([{}]);
   const [showModal, setShowModal] = useState("hidden");
-  const [insertTree] = useMutation(INSERT_TREE);
+  const [showUpdateTreeModal, setShowUpdateTreeModal] = useState("hidden");
+  const [insertTree] = useMutation(INSERT_TREE, {
+    update(cache, { data: { insertTree } }) {
+      cache.modify({
+        fields: {
+          getAllTrees(existingTrees = []) {
+            const newTreeRef = cache.writeFragment({
+              data: insertTree,
+              fragment: gql`
+                fragment NewTree on Tree {
+                  id
+                  common_name
+                  scientific_name
+                }
+              `,
+            });
+            return [...existingTrees, newTreeRef];
+          },
+        },
+      });
+    },
+  });
+  const [deleteTreeWithId] = useMutation(DELETE_TREE_WITH_ID, {
+    update(cache, { data: { deleteTreeWithId } }) {
+      cache.modify({
+        fields: {
+          getAllTrees(existingTrees, { readField }) {
+            return existingTrees.filter(
+              (treeRef) => deleteTreeWithId !== readField("id", treeRef)
+            );
+          },
+        },
+      });
+    },
+  });
+
+  const [updateTreeWithId] = useMutation(UPDATE_TREE_WITH_ID);
   useEffect(() => {
     if (!loading && data.getAllTrees) {
       setTrees(data.getAllTrees);
@@ -48,10 +113,27 @@ function App() {
     });
   }
 
+  function deleteTree(id) {
+    console.log("delete tree -> id", id);
+    deleteTreeWithId({
+      variables: {
+        id: id,
+      },
+    });
+  }
+
+  function updateTree(dataPayload) {
+    console.log("update tree with id -> ", id);
+    updateTreeWithId({
+      variables: {
+        dataPayload,
+      },
+    });
+  }
   return (
     <div className="App">
-      <div className={`container flex h-screen mx-auto bg-darkblue`}>
-        <div className="w-3/12 h-full border-r-2 border-gray-300 left">
+      <div className="container flex h-screen mx-auto bg-darkblue">
+        <div className="left w-3/12 h-full border-r-2 border-gray-300">
           <div className="p-4 text-2xl font-semibold text-center text-white border-b-2 border-gray-300 header">
             Trees Dashboard
           </div>
@@ -74,10 +156,10 @@ function App() {
             </div>
           </div>
         </div>
-        <div className="flex justify-center w-full right">
-          <div className="w-11/12 mt-2 right-item-holder overflow-y-scroll">
-            <div className="pt-2 rounded-lg info-area bg-lightblue">
-              <div className="flex items-center justify-between p-2 text-white info-header">
+        <div className="right w-full bg-red-500 p-2 m-2 flex justify-center items-center">
+          <div className="w-11/12 right-item-holder bg-red-800 h-full py-5">
+            <div className="rounded-lg info-area bg-lightblue h-full py-2">
+              <div className="p-2 text-white info-header flex justify-between">
                 <p>Number of trees in database: {trees.length}</p>
                 <button
                   className="p-2 font-semibold rounded-lg bg-pink"
@@ -93,12 +175,15 @@ function App() {
                   newTreeData={(ret) => sendNewTrees(ret)}
                 ></NewTree>
               </div>
-              <div className="table bg-white w-full">
+              <div className="bg-yellow-200 m-2 h-5/6 flex-grow overflow-y-scroll rounded-xl">
                 <table className="w-full text-white">
-                  <thead className="bg-black text-white px-5">
-                    <tr>
+                  <thead className="bg-yellow-500 text-white px-5">
+                    <tr className="bg-yellow-500">
                       {headers.map((el) => (
-                        <th key={el.toString()} className="w-1/4 p-2">
+                        <th
+                          key={el.toString()}
+                          className="w-1/4 p-2 sticky bg-black top-0"
+                        >
                           {el}
                         </th>
                       ))}
@@ -110,12 +195,16 @@ function App() {
                         className={
                           index % 2 == 0 ? "bg-darkgray" : "bg-lightgray"
                         }
+                        key={index}
                       >
                         <td className="text-center">{el.id}</td>
                         <td className="">{el.common_name}</td>
                         <td className="">{el.scientific_name}</td>
                         <td className="flex justify-center items-center my-2">
-                          <button className="bg-pink rounded-lg mx-2">
+                          <button
+                            className="bg-pink rounded-lg mx-2"
+                            onClick={() => deleteTree(el.id)}
+                          >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               fill="none"
@@ -131,7 +220,21 @@ function App() {
                               />
                             </svg>
                           </button>
-                          <button className="bg-green rounded-lg mx-2">
+                          <button
+                            className="update-button bg-green rounded-lg mx-2"
+                            onClick={() => {
+                              setShowUpdateTreeModal("");
+                              return (
+                                <UpdateTree
+                                  currentTreeData={el}
+                                  showUpdateTreeModal={showUpdateTreeModal}
+                                  onShowUpdateTreeModalChange={(ret) =>
+                                    setShowUpdateTreeModal(ret)
+                                  }
+                                ></UpdateTree>
+                              );
+                            }}
+                          >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               fill="none"

@@ -3,41 +3,55 @@ var { knex } = require("knex");
 const knexFile = require("./knexfile").development;
 const db = knex(knexFile);
 
+const funcGetAllTrees = () => {
+  return db.select("*").from("trees");
+};
+
+const funcGetTreeWithId = async (args) => {
+  return await db
+    .where("id", args.id)
+    .from("trees")
+    .then((r) => {
+      console.log("r ->", r[0]);
+      return r[0];
+    });
+};
+
+const funcInsertTree = async ({ common_name, scientific_name }) => {
+  return db("trees")
+    .insert({ common_name, scientific_name })
+    .then((resp_id) => {
+      return funcGetTreeWithId({ id: resp_id });
+    });
+};
+
+const funcUpdateTree = async ({ id, common_name, scientific_name }) => {
+  return db("trees")
+    .where("id", id)
+    .update({ common_name, scientific_name })
+    .then(() => {
+      return funcGetTreeWithId({ id: id });
+    });
+};
+
+const funcDeleteTreeWithId = async ({ id }) => {
+  const thisId = id;
+  return db("trees")
+    .where("id", id)
+    .del()
+    .then(() => {
+      console.log(thisId);
+      return thisId;
+    });
+};
+
 module.exports = {
-  getAllTrees: () => {
-    return db.select("*").from("trees");
-  },
+  getAllTrees: funcGetAllTrees,
 
-  getTreeWithId: async (args) => {
-    return await db
-      .where("id", args.id)
-      .from("trees")
-      .then((r) => {
-        console.log("r ->", r[0]);
-        return r[0];
-      });
-  },
-
-  insertTree: async ({ common_name, scientific_name }) => {
-    return db("trees")
-      .insert({ common_name, scientific_name })
-      .then((resp) => `tree with id ${resp} inserted`);
-  },
-
-  updateTreeWithId: async ({ id, common_name, scientific_name }) => {
-    return db("trees")
-      .where("id", id)
-      .update({ common_name, scientific_name })
-      .then(() => {
-        return `tree with id: ${id} was updated`;
-      });
-  },
-  deleteTreeWithId: async ({ id }) => {
-    return db("trees")
-      .where("id", id)
-      .del()
-      .then(() => `tree with id: ${id} was deleted`);
-  },
+  getTreeWithId: funcGetTreeWithId,
+  insertTree: funcInsertTree,
+  updateTreeWithId: funcUpdateTree,
+  deleteTreeWithId: funcDeleteTreeWithId,
   //{ common_name: "crabwood", scientific_name: "carapa guianensis" },
   //{ common_name: "common baromalli", scientific_name: "catostemma commune" },
   //{ common_name: "red cedar", scientific_name: "cedrela odorata" },
