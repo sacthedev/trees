@@ -5,15 +5,22 @@ function UpdateTree(props) {
     showUpdateTreeModal,
     onShowUpdateTreeModalChange,
     currentTreeData,
+    newTreeData,
   } = props;
-  const [scientific_name, setScientificName] = useState(
-    currentTreeData.scientific_name
-  );
-  const [common_name, setCommonName] = useState(
-          currentTreeData.common_name
-  );
+
+  const [currentFormData, setCurrentFormData] = useState(currentTreeData);
+
   console.log("UPDATE TREE function");
   console.log(currentTreeData);
+  if (showUpdateTreeModal === "hidden") return null;
+
+  function combineOldNewObjects(oldObj, newObj) {
+    console.log("combineOldNewObjects");
+    console.log("Before combine -> ", oldObj);
+    const combinedObject = Object.assign({}, oldObj, newObj);
+    console.log("After combine -> ", combinedObject);
+    return combinedObject;
+  }
   return (
     <div
       className={`${showUpdateTreeModal} modal fixed z-100 inset-0 h-screen flex justify-center items-center bg-gray-300 bg-opacity-5`}
@@ -21,27 +28,31 @@ function UpdateTree(props) {
       <div className="card bg-darkblue w-1/3 space-y-4 rounded-lg py-4 opacity-100">
         <div className="scientific-name flex justify-center items-center">
           <div>
-            <div>
+            <div className="text-white">
               <label>Scientific Name</label>
             </div>
             <input
+              defaultValue={currentTreeData.scientific_name}
               type="text"
               className="rounded-lg text-black"
-              onChange={(e) => setScientificName(e.target.value)}
-              value={scientific_name}
+              onChange={(e) =>
+                setCurrentFormData({ scientific_name: e.target.value })
+              }
             />
           </div>
         </div>
         <div className="common-name flex justify-center items-center">
           <div>
-            <div>
+            <div className="text-white">
               <label>Common Name</label>
             </div>
             <input
+              defaultValue={currentTreeData.common_name}
               type="text"
               className="rounded-lg text-black"
-              onChange={(e) => setCommonName(e.target.value)}
-              value={common_name}
+              onChange={(e) =>
+                setCurrentFormData({ common_name: e.target.value })
+              }
             />
           </div>
         </div>
@@ -49,7 +60,15 @@ function UpdateTree(props) {
         <div className="flex items-center justify-center">
           <button
             className="bg-green text-white p-2 text-center rounded-lg font-semibold mx-2"
-            onClick={() => newTreeData({ common_name, scientific_name })}
+            onClick={() => {
+              console.log("I was clicked to be sent");
+              console.log("currentTreeData -> ", currentTreeData);
+              console.log("currentFormData -> ", currentFormData);
+              //newTreeData(currentFormData);
+              newTreeData(
+                combineOldNewObjects(currentTreeData, currentFormData)
+              );
+            }}
           >
             Send
           </button>

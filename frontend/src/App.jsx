@@ -58,6 +58,7 @@ function App() {
     //fetchPolicy: "cache-and-network",
   });
   const [trees, setTrees] = useState([{}]);
+  const [updateData, setUpdateData] = useState({});
   const [showModal, setShowModal] = useState("hidden");
   const [showUpdateTreeModal, setShowUpdateTreeModal] = useState("hidden");
   const [insertTree] = useMutation(INSERT_TREE, {
@@ -123,10 +124,13 @@ function App() {
   }
 
   function updateTree(dataPayload) {
-    console.log("update tree with id -> ", id);
+    console.log("update tree with id -> ", dataPayload);
+    const { id, common_name, scientific_name } = dataPayload;
     updateTreeWithId({
       variables: {
-        dataPayload,
+        id: id,
+        common_name: common_name,
+        scientific_name: scientific_name,
       },
     });
   }
@@ -224,15 +228,8 @@ function App() {
                             className="update-button bg-green rounded-lg mx-2"
                             onClick={() => {
                               setShowUpdateTreeModal("");
-                              return (
-                                <UpdateTree
-                                  currentTreeData={el}
-                                  showUpdateTreeModal={showUpdateTreeModal}
-                                  onShowUpdateTreeModalChange={(ret) =>
-                                    setShowUpdateTreeModal(ret)
-                                  }
-                                ></UpdateTree>
-                              );
+                              setUpdateData(el);
+                              console.log("i was clicked");
                             }}
                           >
                             <svg
@@ -255,6 +252,14 @@ function App() {
                     ))}
                   </tbody>
                 </table>
+                <UpdateTree
+                  currentTreeData={updateData}
+                  showUpdateTreeModal={showUpdateTreeModal}
+                  onShowUpdateTreeModalChange={(ret) =>
+                    setShowUpdateTreeModal(ret)
+                  }
+                  newTreeData={(ret) => updateTree(ret)}
+                ></UpdateTree>
               </div>
             </div>
           </div>
