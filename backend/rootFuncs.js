@@ -26,9 +26,12 @@ const funcInsertTree = async ({ common_name, scientific_name }) => {
 };
 
 const funcUpdateTree = async ({ id, common_name, scientific_name }) => {
+  console.log("funcUpdateTree");
+  const updated_at = Date.now();
+  console.log("updated TIME NOW ->", updated_at);
   return db("trees")
     .where("id", id)
-    .update({ common_name, scientific_name })
+    .update({ common_name, scientific_name, updated_at: updated_at })
     .then(() => {
       return funcGetTreeWithId({ id: id });
     });
