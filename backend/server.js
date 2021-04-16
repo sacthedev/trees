@@ -1,9 +1,9 @@
-var express = require("express");
-var { graphqlHTTP } = require("express-graphql");
-var { buildSchema } = require("graphql");
-const rootFuncs = require("./rootFuncs");
-var cors = require("cors");
-var schema = buildSchema(`
+const express = require('express');
+const {graphqlHTTP} = require('express-graphql');
+const {buildSchema} = require('graphql');
+const rootFuncs = require('./rootFuncs');
+const cors = require('cors');
+const schema = buildSchema(`
     type tree {
       id: ID,
       common_name: String,
@@ -22,16 +22,16 @@ var schema = buildSchema(`
     }
 `);
 
-var root = { ...rootFuncs };
-var app = express();
+const root = {...rootFuncs};
+const app = express();
 app.use(cors());
 app.use(
-  "/graphql",
-  graphqlHTTP({
-    schema: schema,
-    rootValue: root,
-    graphiql: true,
-  })
+    '/graphql',
+    graphqlHTTP({
+      schema: schema,
+      rootValue: root,
+      graphiql: true,
+    }),
 );
 
 app.listen(4000);
