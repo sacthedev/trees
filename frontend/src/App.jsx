@@ -7,17 +7,17 @@ const ALL_TREES = gql`
   query GetAllTrees {
     getAllTrees {
       id
-      common_name
+      primary_name
       scientific_name
     }
   }
 `;
 
 const INSERT_TREE = gql`
-  mutation InsertTree($common_name: String, $scientific_name: String) {
-    insertTree(common_name: $common_name, scientific_name: $scientific_name) {
+  mutation InsertTree($primary_name: String, $scientific_name: String) {
+    insertTree(primary_name: $primary_name, scientific_name: $scientific_name) {
       id
-      common_name
+      primary_name
       scientific_name
     }
   }
@@ -32,16 +32,16 @@ const DELETE_TREE_WITH_ID = gql`
 const UPDATE_TREE_WITH_ID = gql`
   mutation UpdateTreeWithId(
     $id: ID
-    $common_name: String
+    $primary_name: String
     $scientific_name: String
   ) {
     updateTreeWithId(
       id: $id
-      common_name: $common_name
+      primary_name: $primary_name
       scientific_name: $scientific_name
     ) {
       id
-      common_name
+      primary_name
       scientific_name
     }
   }
@@ -50,7 +50,7 @@ const UPDATE_TREE_WITH_ID = gql`
 function App() {
   const [headers, setHeaders] = useState([
     "id",
-    "common_name",
+    "primary_name",
     "scientific_name",
     "",
   ]);
@@ -71,7 +71,7 @@ function App() {
               fragment: gql`
                 fragment NewTree on Tree {
                   id
-                  common_name
+                  primary_name
                   scientific_name
                 }
               `,
@@ -108,7 +108,7 @@ function App() {
     console.log(d);
     insertTree({
       variables: {
-        common_name: d.common_name,
+        primary_name: d.primary_name,
         scientific_name: d.scientific_name,
       },
     });
@@ -125,11 +125,11 @@ function App() {
 
   function updateTree(dataPayload) {
     console.log("update tree with id -> ", dataPayload);
-    const { id, common_name, scientific_name } = dataPayload;
+    const { id, primary_name, scientific_name } = dataPayload;
     updateTreeWithId({
       variables: {
         id: id,
-        common_name: common_name,
+        primary_name: primary_name,
         scientific_name: scientific_name,
       },
     });
@@ -202,7 +202,7 @@ function App() {
                         key={index}
                       >
                         <td className="text-center">{el.id}</td>
-                        <td className="">{el.common_name}</td>
+                        <td className="">{el.primary_name}</td>
                         <td className="">{el.scientific_name}</td>
                         <td className="flex justify-center items-center my-2">
                           <button

@@ -23,9 +23,9 @@ const funcGetTreeWithId = async (args) => {
       });
 };
 
-const funcInsertTree = async ({common_name, scientific_name}) => {
+const funcInsertTree = async ({primary_name, scientific_name}) => {
   return db('trees')
-      .insert({common_name, scientific_name})
+      .insert({primary_name, scientific_name})
       .returning('id')
       .then((resp_id) => {
         console.log(resp_id);
@@ -33,7 +33,7 @@ const funcInsertTree = async ({common_name, scientific_name}) => {
       });
 };
 
-const funcUpdateTree = async ({id, common_name, scientific_name}) => {
+const funcUpdateTree = async ({id, primary_name, scientific_name}) => {
   console.log('funcUpdateTree');
   let updated_time = new Date(Date.now()).toISOString().replace(/T|Z/gi, ' ');
   updated_time = updated_time.substr(0, updated_time.length - 1) + '-04';
@@ -41,7 +41,7 @@ const funcUpdateTree = async ({id, common_name, scientific_name}) => {
   console.log('updated TIME NOW ->', updated_at);
   return db('trees')
       .where('id', id)
-      .update({common_name, scientific_name, updated_at: updated_at})
+      .update({primary_name, scientific_name, updated_at: updated_at})
       .then(() => {
         return funcGetTreeWithId({id: id});
       });
@@ -60,7 +60,7 @@ const funcDeleteTreeWithId = async ({id}) => {
 const schema = buildSchema(`
   type tree {
     id: ID,
-    common_name: String,
+    primary_name: String,
     scientific_name: String,
   }
 
@@ -70,8 +70,8 @@ const schema = buildSchema(`
   }
 
  type Mutation {
-    insertTree(common_name: String, scientific_name: String): tree,
-    updateTreeWithId(id: ID, common_name: String, scientific_name: String): tree,
+    insertTree(primary_name: String, scientific_name: String): tree,
+    updateTreeWithId(id: ID, primary_name: String, scientific_name: String): tree,
     deleteTreeWithId(id: ID): ID
   }
 `);
