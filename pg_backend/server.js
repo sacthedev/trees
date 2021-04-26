@@ -3,10 +3,9 @@ const {knex} = require('knex');
 const knexFile = require('./knexfile').development;
 const {graphqlHTTP} = require('express-graphql');
 const {buildSchema} = require('graphql');
-const db = knex(knexFile);
 const cors = require('cors');
 const express = require('express');
-
+const {funcGetAllTrees, funcInsertTree} = require('./functions/basic_tree.js');
 
 const schema = buildSchema(`
   type final_tree {
@@ -24,6 +23,11 @@ const schema = buildSchema(`
     id: ID,
     vernacular_name: String,
   }
+ 
+  input vernacular_name_input {
+    id: ID,
+    vernacular_name: String,
+  }
 
   type Query {
     getAllTrees: [final_tree],
@@ -33,8 +37,7 @@ const schema = buildSchema(`
     insertTree(
       primary_name: String,
       scientific_name: String,
-      botanical_description: String, 
-      field_characteristics: String,
+      vernacular_names: [ vernacular_name_input ],
       ): final_tree,
   }
  `);
@@ -45,103 +48,6 @@ const schema = buildSchema(`
     deleteTreeWithId(id: ID): ID
   }
 */
-const funcGetAllTrees = async () => {
-  return await db.select().table('basic_tree')
-      .then(async (res) => {
-        const finalTreeObjectCollection = [];
-        await Promise.all(
-            res.map(async (basicTreeObject) => {
-	      // get all references within vernacular_name_reference by basicTreeObject.id
-	      const vernacularNameReferenceCollection = await getVernacularNameReference(basicTreeObject);
-	      console.log(vernacularNameReferenceCollection);
-
-	      const vernacularNameObjectCollection = [];
-
-	      // get vernacular names according to reference
-	      await Promise.all(
-                  vernacularNameReferenceCollection.map(async (refObject) => {
-		  const tempObj = await getVernacularNameWithId(refObject);
-		  vernacularNameObjectCollection.push(tempObj);
-                  }),
-	      );
-
-	      // add vernacular_names to basicTreeObject
-	      basicTreeObject['vernacular_names'] = vernacularNameObjectCollection;
-	      console.log(basicTreeObject);
-	      // push the final object to finalTreeObjectCollection
-	      finalTreeObjectCollection.push(basicTreeObject);
-	    }),
-        );
-        console.log('finalTree: ', finalTreeObjectCollection);
-        return finalTreeObjectCollection;
-      });
-};
-
-const getVernacularNameReference = async (args) => {
-  return await db
-      .where('basic_tree_id', args.id)
-      .from('vernacular_name_reference')
-      .then((obj) => {
-        return obj;
-      });
-};
-
-const getVernacularNameWithId = async (args) => {
-  console.log('getVernacularNameWithId');
-  return await db
-      .where('id', args.vernacular_name_id)
-      .from('vernacular_name')
-      .then((obj) => {
-	  return obj[0];
-      });
-};
-
-const funcInsertTree = async ({primary_name, scientific_name}) => {
-  return db('basic_tree')
-      .insert({primary_name, scientific_name})
-      .returning('id')
-      .then((resp_id) => {
-        console.log(resp_id);
-        return funcGetTreeWithId({id: resp_id[0]});
-      });
-};
-
-
-const funcGetTreeWithId = async (args) => {
-  return await db
-      .where('id', args.id)
-      .from('basic_tree')
-      .then((r) => {
-        console.log('r ->', r[0]);
-        return r[0];
-      });
-};
-
-
-const funcUpdateTree = async ({id, primary_name, scientific_name}) => {
-  console.log('funcUpdateTree');
-  let updated_time = new Date(Date.now()).toISOString().replace(/T|Z/gi, ' ');
-  updated_time = updated_time.substr(0, updated_time.length - 1) + '-04';
-  const updated_at = updated_time;
-  console.log('updated TIME NOW ->', updated_at);
-  return db('trees')
-      .where('id', id)
-      .update({primary_name, scientific_name, updated_at: updated_at})
-      .then(() => {
-        return funcGetTreeWithId({id: id});
-      });
-};
-
-const funcDeleteTreeWithId = async ({id}) => {
-  const thisId = id;
-  return db('trees')
-      .where('id', id)
-      .del()
-      .then(() => {
-        console.log(thisId);
-        return thisId;
-      });
-};
 /*
 const root = {
   getAllTrees: funcGetAllTrees,
