@@ -88,6 +88,7 @@ const funcGetTreeWithId = async (id) => {
 };
 
 const funcInsertTreeWithVernacularNames = async ({scientific_name, primary_name, vernacular_names}) => {
+  console.log('funcInsertTreeWithVernacularNames');
   // insert basic tree
   const basicTreeId = await db('basic_tree')
       .insert({scientific_name, primary_name})
@@ -97,7 +98,12 @@ const funcInsertTreeWithVernacularNames = async ({scientific_name, primary_name,
       });
 
   // insert vernacular name references to basic tree
+  console.log('before vernacular_names: ', vernacular_names);
+  if (vernacular_names === undefined) {
+    vernacular_names = [];
+  }
   vernacular_names = JSON.parse(JSON.stringify(vernacular_names));
+  console.log('vernacular_names: ', vernacular_names);
   if (vernacular_names.length > 0) {
     // get all names in vernacular_names table
     const allVernacularNames = await funcGetAllVernacularName();
@@ -150,9 +156,22 @@ const checkNameIn = (allVernacularNames, vernacularName) => {
   return {flag: false, id: null};
 };
 
+
+const funcDeleteTreeWithId = async ({id}) => {
+  console.log('funcDeleteTreeWithId');
+  console.log('id = ', id);
+  return db(TABLENAME)
+      .where('id', id)
+      .del()
+      .then(() => {
+        return id;
+      });
+};
+
 module.exports = {
   funcGetAllTrees,
   funcGetTreeWithId,
   funcInsertTreeWithVernacularNames,
   funcUpdateTreeWithoutVernacularNames,
+  funcDeleteTreeWithId,
 };

@@ -5,7 +5,7 @@ const {graphqlHTTP} = require('express-graphql');
 const {buildSchema} = require('graphql');
 const cors = require('cors');
 const express = require('express');
-const {funcGetAllTrees, funcGetTreeWithId, funcInsertTreeWithVernacularNames, funcUpdateTreeWithoutVernacularNames} = require('./functions/basic_tree.js');
+const {funcGetAllTrees, funcGetTreeWithId, funcInsertTreeWithVernacularNames, funcUpdateTreeWithoutVernacularNames, funcDeleteTreeWithId} = require('./functions/basic_tree.js');
 
 const schema = buildSchema(`
   type final_tree {
@@ -46,6 +46,8 @@ const schema = buildSchema(`
       primary_name: String,
       scientific_name: String,
       ): final_tree,
+
+    deleteTreeWithId(id: ID!): ID,
   }
      `);
 /*
@@ -70,6 +72,7 @@ const root = {
   getTreeWithId: funcGetTreeWithId,
   insertTreeWithVernacularNames: funcInsertTreeWithVernacularNames,
   updateTreeWithoutVernacularNames: funcUpdateTreeWithoutVernacularNames,
+  deleteTreeWithId: funcDeleteTreeWithId,
 };
 
 const app = express();
