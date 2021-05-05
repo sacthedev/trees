@@ -27,6 +27,7 @@ const funcInsertVernacularNameReference = async ({vernacular_name_id, basicTreeI
       .returning('id')
       .then((resp_id) => {
         return resp_id;
+      // vernacular_name_id;
       });
 };
 

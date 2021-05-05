@@ -5,7 +5,7 @@ const {graphqlHTTP} = require('express-graphql');
 const {buildSchema} = require('graphql');
 const cors = require('cors');
 const express = require('express');
-const {funcGetAllTrees, funcInsertTree} = require('./functions/basic_tree.js');
+const {funcGetAllTrees, funcGetTreeWithId, funcInsertTreeWithVernacularNames, funcUpdateTreeWithoutVernacularNames} = require('./functions/basic_tree.js');
 
 const schema = buildSchema(`
   type final_tree {
@@ -31,16 +31,23 @@ const schema = buildSchema(`
 
   type Query {
     getAllTrees: [final_tree],
+    getTreeWithId(id:ID!): final_tree,
   }
   
   type Mutation {
-    insertTree(
+    insertTreeWithVernacularNames(
       primary_name: String,
       scientific_name: String,
       vernacular_names: [ vernacular_name_input ],
       ): final_tree,
+
+    updateTreeTreeWithoutVernacularNames(
+      id: ID!,
+      primary_name: String,
+      scientific_name: String,
+      ): final_tree,
   }
- `);
+     `);
 /*
  type Mutation {
     insertTree(primary_name: String, scientific_name: String): tree,
@@ -52,15 +59,17 @@ const schema = buildSchema(`
 const root = {
   getAllTrees: funcGetAllTrees,
   getTreeWithId: funcGetTreeWithId,
-  insertTree: funcInsertTree,
-  updateTreeWithId: funcUpdateTree,
+  insertTree: funcInsertTreeWithVernacularNames,
+  updateTreeWithId: funcUpdateTreeWithoutVernacularNames,
   deleteTreeWithId: funcDeleteTreeWithId,
 };
 */
 
 const root = {
   getAllTrees: funcGetAllTrees,
-  insertTree: funcInsertTree,
+  getTreeWithId: funcGetTreeWithId,
+  insertTreeWithVernacularNames: funcInsertTreeWithVernacularNames,
+  updateTreeWithoutVernacularNames: funcUpdateTreeWithoutVernacularNames,
 };
 
 const app = express();

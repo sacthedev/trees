@@ -50,6 +50,9 @@ const getVernacularNameReference = async (args) => {
 const funcGetTreeWithId = async (id) => {
   console.log('funcGetTreeWithId');
   console.log(id);
+  if (typeof id === 'object' && id !== null) {
+    id = id.id;
+  }
   const basicTreeObject = await db(TABLENAME)
       .where('id', id)
       .then((res) => {
@@ -57,6 +60,7 @@ const funcGetTreeWithId = async (id) => {
         return res[0];
       });
 
+  console.log('basicTreeObject: ', basicTreeObject);
   let vernacularNameReferenceCollection;
   await Promise.all(
       vernacularNameReferenceCollection =
@@ -83,8 +87,7 @@ const funcGetTreeWithId = async (id) => {
   return basicTreeObject;
 };
 
-const funcInsertTree = async ({scientific_name, primary_name, vernacular_names}) => {
-  console.log('funcInsertTree');
+const funcInsertTreeWithVernacularNames = async ({scientific_name, primary_name, vernacular_names}) => {
   // insert basic tree
   const basicTreeId = await db('basic_tree')
       .insert({scientific_name, primary_name})
@@ -96,16 +99,12 @@ const funcInsertTree = async ({scientific_name, primary_name, vernacular_names})
   // insert vernacular name references to basic tree
   vernacular_names = JSON.parse(JSON.stringify(vernacular_names));
   if (vernacular_names.length > 0) {
-    console.log('VERNACULAR NAMES length > 0');
     // get all names in vernacular_names table
     const allVernacularNames = await funcGetAllVernacularName();
 
-    console.log('allVernacularNames: ', allVernacularNames);
-    console.log('vernacular_names: ', vernacular_names);
     idsToReference = [];
     namesToInsert = [];
     vernacular_names.map((nameObject) => {
-      console.log('namesObject => ', nameObject);
       const {flag, id} = checkNameIn(allVernacularNames, nameObject.vernacular_name);
       if ( flag) {
         idsToReference.push(id);
@@ -114,20 +113,15 @@ const funcInsertTree = async ({scientific_name, primary_name, vernacular_names})
       }
     });
 
-    console.log('namesToInsert: ', namesToInsert);
-    console.log('idsToReference: ', idsToReference);
-
     await Promise.all(
+        // insert names not in vernacular name table whilst pushing ids to idsToReference
         namesToInsert.map(async (nameObject) => {
-          // insert names not in vernacular name table whilst pushing ids to idsToReference
           const returnedId = await funcInsertVernacularName(nameObject);
 	  console.log('returnedId: ', returnedId);
           idsToReference.push(returnedId[0]);
         }),
     );
 
-    console.log('idsToReferenceAFTER: ', idsToReference);
-    console.log('basicTreeId: ', basicTreeId);
     await Promise.all(
         // insert vernacular_name_reference ids for this tree
         idsToReference.map(async (vernacular_name_id) => {
@@ -136,8 +130,15 @@ const funcInsertTree = async ({scientific_name, primary_name, vernacular_names})
     );
   }
 
-  console.log('END');
   return funcGetTreeWithId(basicTreeId);
+};
+
+const funcUpdateTreeWithoutVernacularNames = async ({id, scientific_name, primary_name}) => {
+  await db(TABLENAME)
+      .where('id', id)
+      .update({'scientific_name': scientific_name, 'primary_name': primary_name});
+
+  return funcGetTreeWithId(id);
 };
 
 const checkNameIn = (allVernacularNames, vernacularName) => {
@@ -151,5 +152,7 @@ const checkNameIn = (allVernacularNames, vernacularName) => {
 
 module.exports = {
   funcGetAllTrees,
-  funcInsertTree,
+  funcGetTreeWithId,
+  funcInsertTreeWithVernacularNames,
+  funcUpdateTreeWithoutVernacularNames,
 };
