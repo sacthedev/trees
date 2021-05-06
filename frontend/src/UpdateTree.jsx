@@ -41,17 +41,17 @@ function UpdateTree(props) {
             />
           </div>
         </div>
-        <div className="common-name flex justify-center items-center">
+        <div className="primary-name flex justify-center items-center">
           <div>
             <div className="text-white">
-              <label>Common Name</label>
+              <label>Primary Name</label>
             </div>
             <input
-              defaultValue={currentTreeData.common_name}
+              defaultValue={currentTreeData.primary_name}
               type="text"
               className="rounded-lg text-black"
               onChange={(e) =>
-                setCurrentFormData({ common_name: e.target.value })
+                setCurrentFormData({ primary_name: e.target.value })
               }
             />
           </div>

@@ -30,10 +30,10 @@
 - [ ] add literature column
 - [*] add botanical description
 - [*] add field characteristics
-- [ ] CRUD for vernacular_name
-- [ ] CRUD for vernacular_name_reference
-- [ ] CRUD for basic_tree with vernacular_names a part of it i.e. also adding
-option to add a verbacular name when creating or updating basic_tree object
+- [*] CRUD for vernacular_name
+- [*] CRUD for vernacular_name_reference
+- [*] CRUD for basic_tree with vernacular_names a part of it i.e. also adding
 
 ## frontend
-- [ ] properly create this list
+- [ ] implement option to add vernacular names when creating a new tree
+- [ ] implement option to delete or update vernacular names when updating a new tree

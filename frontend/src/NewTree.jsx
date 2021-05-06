@@ -3,7 +3,8 @@ import React, { useState } from 'react';
 function NewTree(props) {
   const { showModal, onShowModalChange, newTreeData } = props;
   const [scientific_name, setScientificName] = useState(0);
-  const [common_name, setCommonName] = useState(0);
+  const [primary_name, setPrimaryName] = useState(0);
+  const [vernacular_names, setVernacularNames] = useState(0);
   return (
     <div
       className={`${showModal} modal fixed z-100 inset-0 h-screen flex justify-center items-center bg-gray-300 bg-opacity-25`}
@@ -28,10 +29,10 @@ function NewTree(props) {
               <label>Common Name</label>
             </div>
             <input
-              value={common_name}
+              value={primary_name}
               type="text"
               className="rounded-lg text-black"
-              onChange={(e) => setCommonName(e.target.value)}
+              onChange={(e) => setPrimaryName(e.target.value)}
             />
           </div>
         </div>
@@ -39,7 +40,7 @@ function NewTree(props) {
         <div className="flex items-center justify-center">
           <button
             className="bg-green text-white p-2 text-center rounded-lg font-semibold mx-2"
-            onClick={() => newTreeData({ common_name, scientific_name })}
+            onClick={() => newTreeData({ primary_name, scientific_name, vernacular_names })}
           >
             Send
           </button>

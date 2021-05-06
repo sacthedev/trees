@@ -41,7 +41,7 @@ const schema = buildSchema(`
       vernacular_names: [ vernacular_name_input ],
       ): final_tree,
 
-    updateTreeTreeWithoutVernacularNames(
+    updateTreeWithoutVernacularNames(
       id: ID!,
       primary_name: String,
       scientific_name: String,

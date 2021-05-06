@@ -14,8 +14,8 @@ const ALL_TREES = gql`
 `;
 
 const INSERT_TREE = gql`
-  mutation InsertTree($primary_name: String, $scientific_name: String) {
-    insertTree(primary_name: $primary_name, scientific_name: $scientific_name) {
+  mutation InsertTreeWithVernacularNames($primary_name: String, $scientific_name: String) {
+    insertTreeWithVernacularNames(primary_name: $primary_name, scientific_name: $scientific_name) {
       id
       primary_name
       scientific_name
@@ -24,18 +24,18 @@ const INSERT_TREE = gql`
 `;
 
 const DELETE_TREE_WITH_ID = gql`
-  mutation DeleteTreeWithId($id: ID) {
+  mutation DeleteTreeWithId($id: ID!) {
     deleteTreeWithId(id: $id)
   }
 `;
 
 const UPDATE_TREE_WITH_ID = gql`
-  mutation UpdateTreeWithId(
-    $id: ID
+  mutation UpdateTreeWithoutVernacularNames(
+    $id: ID!
     $primary_name: String
     $scientific_name: String
   ) {
-    updateTreeWithId(
+    updateTreeWithoutVernacularNames(
       id: $id
       primary_name: $primary_name
       scientific_name: $scientific_name
@@ -54,20 +54,25 @@ function App() {
     "scientific_name",
     "",
   ]);
+  /*
   const { data, loading } = useQuery(ALL_TREES, {
     //fetchPolicy: "cache-and-network",
   });
+  */
+  const { data, loading } = useQuery(ALL_TREES);
   const [trees, setTrees] = useState([{}]);
   const [updateData, setUpdateData] = useState({});
   const [showModal, setShowModal] = useState("hidden");
   const [showUpdateTreeModal, setShowUpdateTreeModal] = useState("hidden");
-  const [insertTree] = useMutation(INSERT_TREE, {
-    update(cache, { data: { insertTree } }) {
+  const [insertTreeWithVernacularNames] = useMutation(INSERT_TREE, {
+    update(cache, { data: { insertTreeWithVernacularNames } }) {
+      console.log('cache: ', cache);
+      console.log('data: ', data);
       cache.modify({
         fields: {
           getAllTrees(existingTrees = []) {
             const newTreeRef = cache.writeFragment({
-              data: insertTree,
+              data: insertTreeWithVernacularNames,
               fragment: gql`
                 fragment NewTree on Tree {
                   id
@@ -82,21 +87,25 @@ function App() {
       });
     },
   });
+
+
   const [deleteTreeWithId] = useMutation(DELETE_TREE_WITH_ID, {
     update(cache, { data: { deleteTreeWithId } }) {
+      console.log('cache: ', cache);
+      console.log('deleteTreeWithId: ', deleteTreeWithId);
       cache.modify({
-        fields: {
-          getAllTrees(existingTrees, { readField }) {
-            return existingTrees.filter(
-              (treeRef) => deleteTreeWithId !== readField("id", treeRef)
-            );
-          },
-        },
-      });
-    },
+	fields: {
+	  getAllTrees(existingTrees, { readField }) {
+	    return existingTrees.filter(
+	      treeRef => deleteTreeWithId !== readField('id', treeRef)
+	    );
+	  }
+	}
+      })
+    }
   });
-
   const [updateTreeWithId] = useMutation(UPDATE_TREE_WITH_ID);
+
   useEffect(() => {
     if (!loading && data.getAllTrees) {
       setTrees(data.getAllTrees);
@@ -106,7 +115,7 @@ function App() {
   function sendNewTrees(d) {
     console.log("sendNewTrees");
     console.log(d);
-    insertTree({
+    insertTreeWithVernacularNames({
       variables: {
         primary_name: d.primary_name,
         scientific_name: d.scientific_name,
@@ -118,22 +127,33 @@ function App() {
     console.log("delete tree -> id", id);
     deleteTreeWithId({
       variables: {
-        id: id,
+        id,
       },
     });
   }
 
   function updateTree(dataPayload) {
-    console.log("update tree with id -> ", dataPayload);
+    console.log("UPDATE TREE WITH ID -> ", dataPayload.id);
     const { id, primary_name, scientific_name } = dataPayload;
     updateTreeWithId({
       variables: {
-        id: id,
-        primary_name: primary_name,
-        scientific_name: scientific_name,
+        id,
+        primary_name,
+        scientific_name,
       },
     });
   }
+
+//goes at the end of table
+/*
+                <UpdateTree
+                  currentTreeData={updateData}
+                  showUpdateTreeModal={showUpdateTreeModal}
+                  onShowUpdateTreeModalChange={(ret) =>
+                    setShowUpdateTreeModal(ret)
+                  }
+                  newTreeData={(ret) => updateTree(ret)}
+                ></UpdateTree>*/
   return (
     <div className="App">
       <div className="container flex h-screen mx-auto bg-darkblue">
@@ -251,8 +271,10 @@ function App() {
                       </tr>
                     ))}
                   </tbody>
+
                 </table>
-                <UpdateTree
+
+<UpdateTree
                   currentTreeData={updateData}
                   showUpdateTreeModal={showUpdateTreeModal}
                   onShowUpdateTreeModalChange={(ret) =>
@@ -260,7 +282,7 @@ function App() {
                   }
                   newTreeData={(ret) => updateTree(ret)}
                 ></UpdateTree>
-              </div>
+		                  </div>
             </div>
           </div>
         </div>

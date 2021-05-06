@@ -140,6 +140,7 @@ const funcInsertTreeWithVernacularNames = async ({scientific_name, primary_name,
 };
 
 const funcUpdateTreeWithoutVernacularNames = async ({id, scientific_name, primary_name}) => {
+  console.log('funcUpdateTreeWithoutVernacularNames');
   await db(TABLENAME)
       .where('id', id)
       .update({'scientific_name': scientific_name, 'primary_name': primary_name});
