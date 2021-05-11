@@ -1,36 +1,48 @@
 const {knex} = require('knex');
 const knexFile = require('./../knexfile').development;
 const db = knex(knexFile);
-const {funcGetVernacularNameWithId, funcGetAllVernacularName, funcInsertVernacularName} = require('./vernacular_name.js');
-const {funcInsertVernacularNameReference} = require('./vernacular_name_reference');
+const {
+  funcGetVernacularNameWithId,
+  funcGetAllVernacularName,
+  funcInsertVernacularName,
+} = require('./vernacular_name.js');
+const {
+  funcInsertVernacularNameReference,
+} = require('./vernacular_name_reference');
 const TABLENAME = 'basic_tree';
 
 const funcGetAllTrees = async () => {
-  return await db.select().table('basic_tree')
+  return await db
+      .select()
+      .table('basic_tree')
       .then(async (res) => {
         const finalTreeObjectCollection = [];
         await Promise.all(
             res.map(async (basicTreeObject) => {
-	      // get all references within vernacular_name_reference by basicTreeObject.id
-	      const vernacularNameReferenceCollection = await getVernacularNameReference(basicTreeObject);
-	      console.log(vernacularNameReferenceCollection);
+              // get all references within vernacular_name_reference by basicTreeObject.id
+              const vernacularNameReferenceCollection = await getVernacularNameReference(
+                  basicTreeObject,
+              );
+              console.log(vernacularNameReferenceCollection);
 
-	      const vernacularNameObjectCollection = [];
+              const vernacularNameObjectCollection = [];
 
-	      // get vernacular names according to reference
-	      await Promise.all(
+              // get vernacular names according to reference
+              await Promise.all(
                   vernacularNameReferenceCollection.map(async (refObject) => {
-		  const tempObj = await funcGetVernacularNameWithId(refObject.vernacular_name_id);
-		  vernacularNameObjectCollection.push(tempObj);
+                    const tempObj = await funcGetVernacularNameWithId(
+                        refObject.vernacular_name_id,
+                    );
+                    vernacularNameObjectCollection.push(tempObj);
                   }),
-	      );
+              );
 
-	      // add vernacular_names to basicTreeObject
-	      basicTreeObject['vernacular_names'] = vernacularNameObjectCollection;
-	      console.log(basicTreeObject);
-	      // push the final object to finalTreeObjectCollection
-	      finalTreeObjectCollection.push(basicTreeObject);
-	    }),
+              // add vernacular_names to basicTreeObject
+              basicTreeObject['vernacular_names'] = vernacularNameObjectCollection;
+              console.log(basicTreeObject);
+              // push the final object to finalTreeObjectCollection
+              finalTreeObjectCollection.push(basicTreeObject);
+            }),
         );
         console.log('finalTree: ', finalTreeObjectCollection);
         return finalTreeObjectCollection;
@@ -63,23 +75,32 @@ const funcGetTreeWithId = async (id) => {
   console.log('basicTreeObject: ', basicTreeObject);
   let vernacularNameReferenceCollection;
   await Promise.all(
-      vernacularNameReferenceCollection =
-	await getVernacularNameReference(basicTreeObject),
+      (vernacularNameReferenceCollection = await getVernacularNameReference(
+          basicTreeObject,
+      )),
   );
 
-  console.log('vernacularNameReferenceCollection: ', vernacularNameReferenceCollection);
+  console.log(
+      'vernacularNameReferenceCollection: ',
+      vernacularNameReferenceCollection,
+  );
 
   const vernacularNameObjectCollection = [];
 
   // get vernacular names according to reference
   await Promise.all(
       vernacularNameReferenceCollection.map(async (refObject) => {
-        const tempObj = await funcGetVernacularNameWithId(refObject.vernacular_name_id);
+        const tempObj = await funcGetVernacularNameWithId(
+            refObject.vernacular_name_id,
+        );
         vernacularNameObjectCollection.push(tempObj);
       }),
   );
 
-  console.log('vernacularNameObjectCollection: ', vernacularNameObjectCollection);
+  console.log(
+      'vernacularNameObjectCollection: ',
+      vernacularNameObjectCollection,
+  );
   // add vernacular_names to basicTreeObject
   basicTreeObject['vernacular_names'] = vernacularNameObjectCollection;
 
@@ -87,7 +108,11 @@ const funcGetTreeWithId = async (id) => {
   return basicTreeObject;
 };
 
-const funcInsertTreeWithVernacularNames = async ({scientific_name, primary_name, vernacular_names}) => {
+const funcInsertTreeWithVernacularNames = async ({
+  scientific_name,
+  primary_name,
+  vernacular_names,
+}) => {
   console.log('funcInsertTreeWithVernacularNames');
   // insert basic tree
   const basicTreeId = await db('basic_tree')
@@ -111,8 +136,11 @@ const funcInsertTreeWithVernacularNames = async ({scientific_name, primary_name,
     idsToReference = [];
     namesToInsert = [];
     vernacular_names.map((nameObject) => {
-      const {flag, id} = checkNameIn(allVernacularNames, nameObject.vernacular_name);
-      if ( flag) {
+      const {flag, id} = checkNameIn(
+          allVernacularNames,
+          nameObject.vernacular_name,
+      );
+      if (flag) {
         idsToReference.push(id);
       } else {
         namesToInsert.push(nameObject);
@@ -123,7 +151,7 @@ const funcInsertTreeWithVernacularNames = async ({scientific_name, primary_name,
         // insert names not in vernacular name table whilst pushing ids to idsToReference
         namesToInsert.map(async (nameObject) => {
           const returnedId = await funcInsertVernacularName(nameObject);
-	  console.log('returnedId: ', returnedId);
+          console.log('returnedId: ', returnedId);
           idsToReference.push(returnedId[0]);
         }),
     );
@@ -131,7 +159,10 @@ const funcInsertTreeWithVernacularNames = async ({scientific_name, primary_name,
     await Promise.all(
         // insert vernacular_name_reference ids for this tree
         idsToReference.map(async (vernacular_name_id) => {
-          await funcInsertVernacularNameReference({vernacular_name_id, basicTreeId});
+          await funcInsertVernacularNameReference({
+            vernacular_name_id,
+            basicTreeId,
+          });
         }),
     );
   }
@@ -139,11 +170,15 @@ const funcInsertTreeWithVernacularNames = async ({scientific_name, primary_name,
   return funcGetTreeWithId(basicTreeId);
 };
 
-const funcUpdateTreeWithoutVernacularNames = async ({id, scientific_name, primary_name}) => {
+const funcUpdateTreeWithoutVernacularNames = async ({
+  id,
+  scientific_name,
+  primary_name,
+}) => {
   console.log('funcUpdateTreeWithoutVernacularNames');
   await db(TABLENAME)
       .where('id', id)
-      .update({'scientific_name': scientific_name, 'primary_name': primary_name});
+      .update({scientific_name: scientific_name, primary_name: primary_name});
 
   return funcGetTreeWithId(id);
 };
@@ -156,7 +191,6 @@ const checkNameIn = (allVernacularNames, vernacularName) => {
   }
   return {flag: false, id: null};
 };
-
 
 const funcDeleteTreeWithId = async ({id}) => {
   console.log('funcDeleteTreeWithId');

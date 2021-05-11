@@ -3,6 +3,7 @@ const knexFile = require('./../knexfile').development;
 const db = knex(knexFile);
 
 const funcGetAllVernacularName = async () => {
+  console.log('in funcGetAllVernacularName');
   return db('vernacular_name')
       .select('*')
       .then((res) => {

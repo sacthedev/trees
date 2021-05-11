@@ -3,6 +3,15 @@ import { useQuery, useMutation, gql } from "@apollo/client";
 import NewTree from "./NewTree";
 import UpdateTree from "./UpdateTree";
 
+const ALL_VERNACULAR_NAMES = gql`
+  query GetAllVernacularNames {
+    getAllVernacularNames {
+      id
+      vernacular_name
+    }
+  }
+`;
+
 const ALL_TREES = gql`
   query GetAllTrees {
     getAllTrees {
@@ -12,10 +21,17 @@ const ALL_TREES = gql`
     }
   }
 `;
-
 const INSERT_TREE = gql`
-  mutation InsertTreeWithVernacularNames($primary_name: String, $scientific_name: String) {
-    insertTreeWithVernacularNames(primary_name: $primary_name, scientific_name: $scientific_name) {
+  mutation InsertTreeWithVernacularNames(
+    $primary_name: String
+    $scientific_name: String
+    $vernacular_names: [vernacular_name_input]
+  ) {
+    insertTreeWithVernacularNames(
+      primary_name: $primary_name
+      scientific_name: $scientific_name
+      vernacular_names: $vernacular_names
+    ) {
       id
       primary_name
       scientific_name
@@ -50,8 +66,8 @@ const UPDATE_TREE_WITH_ID = gql`
 function App() {
   const [headers, setHeaders] = useState([
     "id",
-    "primary_name",
-    "scientific_name",
+    "Primary Name",
+    "Scientific Name",
     "",
   ]);
   /*
@@ -59,28 +75,38 @@ function App() {
     //fetchPolicy: "cache-and-network",
   });
   */
-  const { data, loading } = useQuery(ALL_TREES);
+  const allTreesQuery = useQuery(ALL_TREES);
+  const treesData = allTreesQuery.data;
+  const treeDataLoading = allTreesQuery.loading;
+
+  const vernacularNamesDataQuery = useQuery(ALL_VERNACULAR_NAMES);
+  const vernacularNamesData = vernacularNamesDataQuery.data;
+  const vernacularNamesDataLoading = vernacularNamesDataQuery.loading;
+
   const [trees, setTrees] = useState([{}]);
+  const [vernacularNames, setVernacularNames] = useState([{}]);
   const [updateData, setUpdateData] = useState({});
   const [showModal, setShowModal] = useState("hidden");
   const [showUpdateTreeModal, setShowUpdateTreeModal] = useState("hidden");
   const [insertTreeWithVernacularNames] = useMutation(INSERT_TREE, {
     update(cache, { data: { insertTreeWithVernacularNames } }) {
-      console.log('cache: ', cache);
-      console.log('data: ', data);
+      console.log("cache: ", cache);
+      console.log("data: ", insertTreeWithVernacularNames);
       cache.modify({
         fields: {
           getAllTrees(existingTrees = []) {
             const newTreeRef = cache.writeFragment({
               data: insertTreeWithVernacularNames,
               fragment: gql`
-                fragment NewTree on Tree {
+                fragment NewTree on final_tree {
                   id
                   primary_name
                   scientific_name
                 }
               `,
             });
+            console.log("existingTrees: ", existingTrees);
+            console.log("newTreeRef: ", newTreeRef);
             return [...existingTrees, newTreeRef];
           },
         },
@@ -88,37 +114,60 @@ function App() {
     },
   });
 
-
   const [deleteTreeWithId] = useMutation(DELETE_TREE_WITH_ID, {
     update(cache, { data: { deleteTreeWithId } }) {
-      console.log('cache: ', cache);
-      console.log('deleteTreeWithId: ', deleteTreeWithId);
+      console.log("cache: ", cache);
+      console.log("deleteTreeWithId: ", deleteTreeWithId);
       cache.modify({
-	fields: {
-	  getAllTrees(existingTrees, { readField }) {
-	    return existingTrees.filter(
-	      treeRef => deleteTreeWithId !== readField('id', treeRef)
-	    );
-	  }
-	}
-      })
-    }
+        fields: {
+          getAllTrees(existingTrees, { readField }) {
+            return existingTrees.filter(
+              (treeRef) => deleteTreeWithId !== readField("id", treeRef)
+            );
+          },
+        },
+      });
+    },
   });
   const [updateTreeWithId] = useMutation(UPDATE_TREE_WITH_ID);
 
   useEffect(() => {
-    if (!loading && data.getAllTrees) {
-      setTrees(data.getAllTrees);
+    console.log("*******useEffect ALL_TREES*********");
+    if (!treeDataLoading && treesData.getAllTrees) {
+      setTrees(treesData.getAllTrees);
+      console.log("treeData: ", treesData);
     }
-  }, [data, loading]);
+    console.log("*************************");
+  }, [treesData, treeDataLoading]);
+
+  useEffect(() => {
+    console.log("*******useEffect ALL_VERNACULAR_NAMES*********");
+    if (
+      !vernacularNamesDataLoading &&
+      vernacularNamesData.getAllVernacularNames
+    ) {
+      setVernacularNames(vernacularNamesData.getAllVernacularNames);
+      console.log("vernacularNamesData: ", vernacularNamesData);
+    }
+    console.log("*************************");
+  }, [vernacularNamesData, vernacularNamesDataLoading]);
 
   function sendNewTrees(d) {
     console.log("sendNewTrees");
     console.log(d);
+    //remove __typename from d.vernacular_names
+    let temp = [];
+    d.vernacular_names.map((el) => {
+      temp.push({ id: el.id, vernacular_name: el.vernacular_name });
+    });
+    d["vernacular_names"] = temp;
+    console.log("toSend: ", JSON.stringify(d));
     insertTreeWithVernacularNames({
       variables: {
         primary_name: d.primary_name,
         scientific_name: d.scientific_name,
+        vernacular_names: d.vernacular_names,
+        //vernacular_names: [{ id: 1, vernacular_name: "hardwood" }],
       },
     });
   }
@@ -143,107 +192,73 @@ function App() {
       },
     });
   }
-
-//goes at the end of table
-/*
-                <UpdateTree
-                  currentTreeData={updateData}
-                  showUpdateTreeModal={showUpdateTreeModal}
-                  onShowUpdateTreeModalChange={(ret) =>
-                    setShowUpdateTreeModal(ret)
-                  }
-                  newTreeData={(ret) => updateTree(ret)}
-                ></UpdateTree>*/
   return (
-    <div className="App">
+    <div className="App font-sans">
+      {vernacularNames && (
+        <NewTree
+          vernacularNames={vernacularNames}
+          showModal={showModal}
+          onShowModalChange={(ret) => setShowModal(ret)}
+          newTreeData={(ret) => sendNewTrees(ret)}
+        ></NewTree>
+      )}
       <div className="container flex h-screen mx-auto bg-darkblue">
-        <div className="left w-3/12 h-full border-r-2 border-gray-300">
+        <div className="left w-3/12 h-full bg-lightblue">
           <div className="p-4 text-2xl font-semibold text-center text-white border-b-2 border-gray-300 header">
             Trees Dashboard
           </div>
-          <div className="flex justify-center below-header justify-content-center">
-            <div className="w-10/12 p-2 my-4 text-white rounded-lg filter-card bg-lightblue">
-              <div className="card-header">
-                <div className="text-center uppercase title">
-                  filter trees by
-                </div>
-                <div className="horizontal-line">
-                  <hr></hr>
-                </div>
-              </div>
-              <div className="card-body">
-                <ul>
-                  <li>common name</li>
-                  <li>scientific name</li>
-                </ul>
-              </div>
-            </div>
-          </div>
         </div>
-        <div className="right w-full bg-red-500 p-2 m-2 flex justify-center items-center">
-          <div className="w-11/12 right-item-holder bg-red-800 h-full py-5">
-            <div className="rounded-lg info-area bg-lightblue h-full py-2">
+        <div className="right w-full p-2 m-2 flex justify-center items-center">
+          <div className="w-11/12 right-item-holder h-full py-5">
+            <div className="rounded-lg info-area h-full py-2">
               <div className="p-2 text-white info-header flex justify-between">
-                <p>Number of trees in database: {trees.length}</p>
-                <button
-                  className="p-2 font-semibold rounded-lg bg-pink"
-                  onClick={() => {
-                    setShowModal(showModal === "hidden" ? "" : "hidden");
-                  }}
-                >
-                  Add new tree
-                </button>
-                <NewTree
-                  showModal={showModal}
-                  onShowModalChange={(ret) => setShowModal(ret)}
-                  newTreeData={(ret) => sendNewTrees(ret)}
-                ></NewTree>
+                <div className="bg-lightblue flex items-center m-2 p-2 rounded-lg">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    height="35px"
+                    viewBox="0 0 24 24"
+                    width="35px"
+                    fill="darkgreen"
+                    stroke="none"
+                  >
+                    <path d="M0 0h24v24H0z" fill="none" />
+                    <path d="M2 20h20v-4H2v4zm2-3h2v2H4v-2zM2 4v4h20V4H2zm4 3H4V5h2v2zm-4 7h20v-4H2v4zm2-3h2v2H4v-2z" />
+                  </svg>
+                  <p className="text-3xl font-bold px-2">{trees.length}</p>
+                  <p className="font-semibold px-2">Trees</p>
+                </div>
+                <div className="flex items-center">
+                  <button
+                    className="p-2 font-semibold rounded-lg bg-lightgreen text-black"
+                    onClick={() => {
+                      setShowModal(showModal === "hidden" ? "" : "hidden");
+                    }}
+                  >
+                    + ADD TREE
+                  </button>
+                </div>
               </div>
-              <div className="bg-yellow-200 m-2 h-5/6 flex-grow overflow-y-scroll rounded-xl">
+              <div className="bg-lightblue m-2 h-5/6 flex-grow overflow-y-scroll rounded-xl pt-10">
                 <table className="w-full text-white">
-                  <thead className="bg-yellow-500 text-white px-5">
-                    <tr className="bg-yellow-500">
+                  <thead className="text-headerTextWhite px-5">
+                    <tr className="">
                       {headers.map((el) => (
                         <th
                           key={el.toString()}
-                          className="w-1/4 p-2 sticky bg-black top-0"
+                          className="w-1/4 p-2 bg-headerBlue"
                         >
                           {el}
                         </th>
                       ))}
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="text-rowTextWhite">
                     {trees.map((el, index) => (
-                      <tr
-                        className={
-                          index % 2 == 0 ? "bg-darkgray" : "bg-lightgray"
-                        }
-                        key={index}
-                      >
+                      <tr key={index}>
                         <td className="text-center">{el.id}</td>
                         <td className="">{el.primary_name}</td>
                         <td className="">{el.scientific_name}</td>
-                        <td className="flex justify-center items-center my-2">
-                          <button
-                            className="bg-pink rounded-lg mx-2"
-                            onClick={() => deleteTree(el.id)}
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              className="h-10"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                              />
-                            </svg>
-                          </button>
+                        <td className="flex justify-center items-center my-4">
                           <button
                             className="update-button bg-green rounded-lg mx-2"
                             onClick={() => {
@@ -254,35 +269,38 @@ function App() {
                           >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
+                              height="24px"
                               viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              className="h-10"
+                              width="24px"
+                              className="fill-current text-darkyellow"
+                              stroke="none"
                             >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                              />
+                              <path d="M0 0h24v24H0z" fill="none" />
+                              <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+                            </svg>
+                          </button>
+                          <button
+                            className="rounded-lg mx-2"
+                            onClick={() => deleteTree(el.id)}
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              height="24px"
+                              viewBox="0 0 24 24"
+                              width="24px"
+                              stroke="none"
+                              className="fill-current text-danger"
+                            >
+                              <path d="M0 0h24v24H0z" fill="none" />
+                              <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
                             </svg>
                           </button>
                         </td>
                       </tr>
                     ))}
                   </tbody>
-
                 </table>
-
-<UpdateTree
-                  currentTreeData={updateData}
-                  showUpdateTreeModal={showUpdateTreeModal}
-                  onShowUpdateTreeModalChange={(ret) =>
-                    setShowUpdateTreeModal(ret)
-                  }
-                  newTreeData={(ret) => updateTree(ret)}
-                ></UpdateTree>
-		                  </div>
+              </div>
             </div>
           </div>
         </div>
