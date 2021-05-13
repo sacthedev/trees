@@ -25,7 +25,9 @@ const funcInsertVernacularName = async ({vernacular_name}) => {
       .insert({vernacular_name})
       .returning('id')
       .then((resp_id) => {
-        return resp_id;
+        console.log('resp_id: ', resp_id);
+        const vernacularNameWithId = funcGetVernacularNameWithId(resp_id[0]);
+        return vernacularNameWithId;
       });
 };
 

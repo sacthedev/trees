@@ -12,7 +12,14 @@ const {
   funcUpdateTreeWithoutVernacularNames,
   funcDeleteTreeWithId,
 } = require('./functions/basic_tree.js');
-const {funcGetAllVernacularName} = require('./functions/vernacular_name');
+const {
+  funcGetAllVernacularName,
+  funcInsertVernacularName,
+} = require('./functions/vernacular_name');
+
+const {
+  funcInsertVernacularNameReference,
+} = require('./functions/vernacular_name_reference');
 
 const schema = buildSchema(`
   type final_tree {
@@ -54,6 +61,15 @@ const schema = buildSchema(`
       primary_name: String,
       scientific_name: String,
       ): final_tree,
+      
+    insertVernacularName(
+      vernacular_name: String,
+    ): vernacular_name
+      
+    insertVernacularNameReference(
+      vernacular_name_id: ID,
+      basicTreeId: ID
+    ):ID,
 
     deleteTreeWithId(id: ID!): ID,
   }
@@ -66,6 +82,8 @@ const root = {
   insertTreeWithVernacularNames: funcInsertTreeWithVernacularNames,
   updateTreeWithoutVernacularNames: funcUpdateTreeWithoutVernacularNames,
   deleteTreeWithId: funcDeleteTreeWithId,
+  insertVernacularName: funcInsertVernacularName,
+  insertVernacularNameReference: funcInsertVernacularNameReference,
 };
 
 const app = express();

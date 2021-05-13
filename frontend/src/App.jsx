@@ -63,6 +63,15 @@ const UPDATE_TREE_WITH_ID = gql`
   }
 `;
 
+const INSERT_NEW_VERNACULAR_NAME = gql`
+  mutation InsertVernacularName($vernacular_name: String) {
+    insertVernacularName(vernacular_name: $vernacular_name) {
+      id
+      vernacular_name
+    }
+  }
+`;
+
 function App() {
   const [headers, setHeaders] = useState([
     "id",
@@ -88,6 +97,28 @@ function App() {
   const [updateData, setUpdateData] = useState({});
   const [showModal, setShowModal] = useState("hidden");
   const [showUpdateTreeModal, setShowUpdateTreeModal] = useState("hidden");
+  const [insertVernacularName] = useMutation(INSERT_NEW_VERNACULAR_NAME, {
+    update(cache, { data: { insertVernacularName } }) {
+      console.log("cache: ", cache);
+      console.log("data: ", insertVernacularName);
+      cache.modify({
+        fields: {
+          getAllVernacularNames(existingVernacularNames = []) {
+            const newVernacularNameRef = cache.writeFragment({
+              data: insertVernacularName,
+              fragment: gql`
+                fragment NewVernacularName on vernacular_name {
+                  id
+                  vernacular_name
+                }
+              `,
+            });
+            return [...existingVernacularNames, newVernacularNameRef];
+          },
+        },
+      });
+    },
+  });
   const [insertTreeWithVernacularNames] = useMutation(INSERT_TREE, {
     update(cache, { data: { insertTreeWithVernacularNames } }) {
       console.log("cache: ", cache);
@@ -152,6 +183,16 @@ function App() {
     console.log("*************************");
   }, [vernacularNamesData, vernacularNamesDataLoading]);
 
+  function sendNewVernacularName(newVernacularNameData) {
+    console.log("sendNewVernacularName");
+    console.log(newVernacularNameData);
+    insertVernacularName({
+      variables: {
+        vernacular_name: newVernacularNameData,
+      },
+    });
+  }
+
   function sendNewTrees(d) {
     console.log("sendNewTrees");
     console.log(d);
@@ -200,6 +241,7 @@ function App() {
           showModal={showModal}
           onShowModalChange={(ret) => setShowModal(ret)}
           newTreeData={(ret) => sendNewTrees(ret)}
+          newVernacularName={(ret) => sendNewVernacularName(ret)}
         ></NewTree>
       )}
       <div className="container flex h-screen mx-auto bg-darkblue">

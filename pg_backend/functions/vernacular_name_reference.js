@@ -19,7 +19,10 @@ const funcGetVernacularNameReferenceWithId = async (id) => {
       });
 };
 
-const funcInsertVernacularNameReference = async ({vernacular_name_id, basicTreeId}) => {
+const funcInsertVernacularNameReference = async ({
+  vernacular_name_id,
+  basicTreeId,
+}) => {
   const basic_tree_id = basicTreeId;
   console.log('funcInsertVernacularNameReference');
   return db(TABLENAME)
