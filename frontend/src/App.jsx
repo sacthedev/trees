@@ -18,6 +18,10 @@ const ALL_TREES = gql`
       id
       primary_name
       scientific_name
+      vernacular_names {
+        id
+        vernacular_name
+      }
     }
   }
 `;
@@ -46,19 +50,25 @@ const DELETE_TREE_WITH_ID = gql`
 `;
 
 const UPDATE_TREE_WITH_ID = gql`
-  mutation UpdateTreeWithoutVernacularNames(
+  mutation UpdateTreeWithVernacularNames(
     $id: ID!
     $primary_name: String
     $scientific_name: String
+    $vernacular_names: [vernacular_name_input]
   ) {
-    updateTreeWithoutVernacularNames(
+    updateTreeWithVernacularNames(
       id: $id
       primary_name: $primary_name
       scientific_name: $scientific_name
+      vernacular_names: $vernacular_names
     ) {
       id
       primary_name
       scientific_name
+      vernacular_names {
+        id
+        vernacular_name
+      }
     }
   }
 `;
@@ -223,13 +233,20 @@ function App() {
   }
 
   function updateTree(dataPayload) {
-    console.log("UPDATE TREE WITH ID -> ", dataPayload.id);
-    const { id, primary_name, scientific_name } = dataPayload;
+    //remove __typename from dataPayload.vernacular_names
+    let temp = [];
+    dataPayload.vernacular_names.map((el) => {
+      temp.push({ id: el.id, vernacular_name: el.vernacular_name });
+    });
+    dataPayload["vernacular_names"] = temp;
+    const { id, primary_name, scientific_name, vernacular_names } = dataPayload;
+    console.log("UPDATE TREE WITH ID -> ", dataPayload);
     updateTreeWithId({
       variables: {
         id,
         primary_name,
         scientific_name,
+        vernacular_names,
       },
     });
   }
@@ -243,6 +260,16 @@ function App() {
           newTreeData={(ret) => sendNewTrees(ret)}
           newVernacularName={(ret) => sendNewVernacularName(ret)}
         ></NewTree>
+      )}
+      {showUpdateTreeModal === "" && (
+        <UpdateTree
+          newTreeData={(ret) => updateTree(ret)}
+          showUpdateTreeModal={showUpdateTreeModal}
+          updateData={updateData}
+          vernacularNames={vernacularNames}
+          onShowModalChange={(ret) => setShowUpdateTreeModal(ret)}
+          newVernacularName={(ret) => sendNewVernacularName(ret)}
+        ></UpdateTree>
       )}
       <div className="container flex h-screen mx-auto bg-darkblue">
         <div className="left w-3/12 h-full bg-lightblue">
@@ -322,7 +349,7 @@ function App() {
                             </svg>
                           </button>
                           <button
-                            className="rounded-lg mx-2"
+                            className="delete-button rounded-lg mx-2"
                             onClick={() => deleteTree(el.id)}
                           >
                             <svg

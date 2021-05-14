@@ -34,21 +34,29 @@ const funcInsertVernacularNameReference = async ({
       });
 };
 
-const funcUpdateVernacularNameReference = async ({id, vernacular_name}) => {
+const funcUpdateVernacularNameReference = async ({
+  id,
+  basic_tree_id,
+  vernacular_name_id,
+}) => {
   return db(TABLENAME)
       .where('id', id)
-      .update({vernacular_name})
+      .update({vernacular_name_id, basic_tree_id})
       .then(() => {
         return 'success';
       });
 };
 
-const funcDeleteVernacularNameReferenceWithId = async ({id}) => {
+const funcDeleteVernacularNameReferenceWithBasicTreeId = async (
+    basic_tree_id,
+) => {
+  console.log('funcDeleteVernacularNameReferenceWithBasicTreeId');
+  console.log('basic_tree_id: ', basic_tree_id);
   return db(TABLENAME)
-      .where('id', id)
+      .where('basic_tree_id', basic_tree_id)
       .del()
       .then(() => {
-        return `vernacular_name object with id ${id} deleted successfully`;
+        return `vernacular_name object with id ${basic_tree_id} deleted successfully`;
       });
 };
 
@@ -57,5 +65,5 @@ module.exports = {
   funcGetVernacularNameReferenceWithId,
   funcInsertVernacularNameReference,
   funcUpdateVernacularNameReference,
-  funcDeleteVernacularNameReferenceWithId,
+  funcDeleteVernacularNameReferenceWithBasicTreeId,
 };

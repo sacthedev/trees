@@ -8,6 +8,7 @@ const {
 } = require('./vernacular_name.js');
 const {
   funcInsertVernacularNameReference,
+  funcDeleteVernacularNameReferenceWithBasicTreeId,
 } = require('./vernacular_name_reference');
 const TABLENAME = 'basic_tree';
 
@@ -183,6 +184,56 @@ const funcUpdateTreeWithoutVernacularNames = async ({
   return funcGetTreeWithId(id);
 };
 
+const funcUpdateTreeWithVernacularNames = async ({
+  id,
+  scientific_name,
+  primary_name,
+  vernacular_names,
+}) => {
+  console.log('funcUpdateTreeWithVernacularNames');
+
+  await db(TABLENAME)
+      .where('id', id)
+      .update({scientific_name: scientific_name, primary_name: primary_name});
+
+  // delete all vernacular_references to this tree_id
+  console.log('delete all vernacular_references to this tree_id');
+  await funcDeleteVernacularNameReferenceWithBasicTreeId(id);
+
+  // insert new reference
+
+  console.log('insert new reference');
+  console.log('before vernacular_names: ', vernacular_names);
+  if (vernacular_names === undefined) {
+    vernacular_names = [];
+  }
+  vernacular_names = JSON.parse(JSON.stringify(vernacular_names));
+  console.log('vernacular_names: ', vernacular_names);
+
+  if (vernacular_names.length > 0) {
+    // get all names in vernacular_names table
+    const allVernacularNames = await funcGetAllVernacularName();
+
+    idsToReference = [];
+    vernacular_names.map((obj) => {
+      idsToReference.push(obj.id);
+    });
+
+    const basicTreeId = id;
+    await Promise.all(
+        // insert vernacular_name_reference ids for this tree
+        idsToReference.map(async (vernacular_name_id) => {
+          await funcInsertVernacularNameReference({
+            vernacular_name_id,
+            basicTreeId,
+          });
+        }),
+    );
+  }
+  console.log('next to return');
+  return funcGetTreeWithId(id);
+};
+
 const checkNameIn = (allVernacularNames, vernacularName) => {
   for (let i = 0; i < allVernacularNames.length; i++) {
     if (allVernacularNames[i].vernacular_name == vernacularName) {
@@ -208,5 +259,6 @@ module.exports = {
   funcGetTreeWithId,
   funcInsertTreeWithVernacularNames,
   funcUpdateTreeWithoutVernacularNames,
+  funcUpdateTreeWithVernacularNames,
   funcDeleteTreeWithId,
 };
