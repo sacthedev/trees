@@ -46,7 +46,9 @@ const funcGetAllTrees = async () => {
             }),
         );
         console.log('finalTree: ', finalTreeObjectCollection);
-        return finalTreeObjectCollection;
+        return finalTreeObjectCollection.sort(
+            (a, b) => parseInt(a.id) - parseInt(b.id),
+        );
       });
 };
 

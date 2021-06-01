@@ -7,7 +7,7 @@ const funcGetAllVernacularName = async () => {
   return db('vernacular_name')
       .select('*')
       .then((res) => {
-        return res;
+        return res.sort((a, b) => parseInt(a.id) - parseInt(b.id));
       });
 };
 
