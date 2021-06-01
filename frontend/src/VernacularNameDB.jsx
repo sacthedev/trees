@@ -19,12 +19,11 @@ function VernacularNameDB(props) {
       <div className="flex">
         <div>
           {vernacularNames.map((e, index) => (
-            <div className="flex items-center">
+            <div className="flex items-center" key={index}>
               <p>{e.id}</p>
               <input
                 className="bg-pink-200 p-1 m-1"
                 id={`input-${index}`}
-                key={index}
                 defaultValue={e.vernacular_name}
                 onChange={(el) => {
                   console.log("changed");
