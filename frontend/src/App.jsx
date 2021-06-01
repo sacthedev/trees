@@ -82,6 +82,21 @@ const INSERT_NEW_VERNACULAR_NAME = gql`
   }
 `;
 
+const UPDATE_VERNACULAR_NAME_WITH_ID = gql`
+  mutation UpdateVernacularNameWithId($id: ID, $vernacular_name: String) {
+    updateVernacularNameWithId(id: $id, vernacular_name: $vernacular_name) {
+      id
+      vernacular_name
+    }
+  }
+`;
+
+const DELETE_VERNACULAR_NAME_WITH_ID = gql`
+  mutation DeleteVernacularNameWithId($id: ID) {
+    deleteVernacularNameWithId(id: $id)
+  }
+`;
+
 function App() {
   const [headers, setHeaders] = useState([
     "id",
@@ -89,11 +104,6 @@ function App() {
     "Scientific Name",
     "",
   ]);
-  /*
-  const { data, loading } = useQuery(ALL_TREES, {
-    //fetchPolicy: "cache-and-network",
-  });
-  */
   const allTreesQuery = useQuery(ALL_TREES);
   const treesData = allTreesQuery.data;
   const treeDataLoading = allTreesQuery.loading;
@@ -155,6 +165,26 @@ function App() {
     },
   });
 
+  const [deleteVernacularNameWithId] = useMutation(
+    DELETE_VERNACULAR_NAME_WITH_ID,
+    {
+      update(cache, { data: { deleteVernacularNameWithId } }) {
+        console.log("cache: ", cache);
+        console.log("deleteVernacularNameWithId: ", deleteVernacularNameWithId);
+        cache.modify({
+          fields: {
+            getAllVernacularNames(existingVernacularNames, { readField }) {
+              return existingVernacularNames.filter(
+                (vernacularNameRef) =>
+                  deleteVernacularNameWithId !==
+                  readField("id", vernacularNameRef)
+              );
+            },
+          },
+        });
+      },
+    }
+  );
   const [deleteTreeWithId] = useMutation(DELETE_TREE_WITH_ID, {
     update(cache, { data: { deleteTreeWithId } }) {
       console.log("cache: ", cache);
@@ -172,6 +202,9 @@ function App() {
   });
   const [updateTreeWithId] = useMutation(UPDATE_TREE_WITH_ID);
 
+  const [updateVernacularNameWithId] = useMutation(
+    UPDATE_VERNACULAR_NAME_WITH_ID
+  );
   useEffect(() => {
     console.log("*******useEffect ALL_TREES*********");
     if (!treeDataLoading && treesData.getAllTrees) {
@@ -203,6 +236,21 @@ function App() {
     });
   }
 
+  function updateVernacularName(updatedVernacularNameData) {
+    console.log("App.jsx -> func -> updateVernacularName");
+    console.log(updatedVernacularNameData);
+    updateVernacularNameWithId({
+      variables: {
+        ...updatedVernacularNameData,
+      },
+    });
+  }
+  function deleteVernacularName(id) {
+    console.log("App.jsx -> func -> deleteVernacularName");
+    deleteVernacularNameWithId({
+      variables: { id },
+    });
+  }
   function sendNewTrees(d) {
     console.log("sendNewTrees");
     console.log(d);
@@ -268,7 +316,15 @@ function App() {
           updateData={updateData}
           vernacularNames={vernacularNames}
           onShowModalChange={(ret) => setShowUpdateTreeModal(ret)}
-          newVernacularName={(ret) => sendNewVernacularName(ret)}
+          newVernacularNameFromVernacularNameDB={(ret) =>
+            sendNewVernacularName(ret)
+          }
+          updateVernacularNameFromVernacularNameDB={(ret) =>
+            updateVernacularName(ret)
+          }
+          deleteVernacularNameFromVernacularNameDB={(ret) => {
+            deleteVernacularName(ret);
+          }}
         ></UpdateTree>
       )}
       <div className="container flex h-screen mx-auto bg-darkblue">

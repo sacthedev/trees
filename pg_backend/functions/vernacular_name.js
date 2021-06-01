@@ -36,7 +36,8 @@ const funcUpdateVernacularName = async ({id, vernacular_name}) => {
       .where('id', id)
       .update({vernacular_name})
       .then(() => {
-        return 'success';
+        const vernacularNameWithId = funcGetVernacularNameWithId(id);
+        return vernacularNameWithId;
       });
 };
 
@@ -45,7 +46,7 @@ const funcDeleteVernacularNameWithId = async ({id}) => {
       .where('id', id)
       .del()
       .then(() => {
-        return `vernacular_name object with id ${id} deleted successfully`;
+        return id;
       });
 };
 

@@ -16,6 +16,8 @@ const {
 const {
   funcGetAllVernacularName,
   funcInsertVernacularName,
+  funcUpdateVernacularName,
+  funcDeleteVernacularNameWithId,
 } = require('./functions/vernacular_name');
 
 const {
@@ -79,6 +81,13 @@ const schema = buildSchema(`
       basicTreeId: ID
     ):ID,
 
+    updateVernacularNameWithId(
+      id: ID,
+      vernacular_name: String,
+    ): vernacular_name
+
+    deleteVernacularNameWithId(id: ID): ID,
+
     deleteTreeWithId(id: ID!): ID,
   }
      `);
@@ -90,7 +99,9 @@ const root = {
   insertTreeWithVernacularNames: funcInsertTreeWithVernacularNames,
   updateTreeWithoutVernacularNames: funcUpdateTreeWithoutVernacularNames,
   updateTreeWithVernacularNames: funcUpdateTreeWithVernacularNames,
+  updateVernacularNameWithId: funcUpdateVernacularName,
   deleteTreeWithId: funcDeleteTreeWithId,
+  deleteVernacularNameWithId: funcDeleteVernacularNameWithId,
   insertVernacularName: funcInsertVernacularName,
   insertVernacularNameReference: funcInsertVernacularNameReference,
 };

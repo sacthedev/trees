@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-
+import VernacularNameDB from "./VernacularNameDB";
 function UpdateTree(props) {
   const {
     showUpdateTreeModal,
@@ -7,7 +7,9 @@ function UpdateTree(props) {
     newTreeData,
     vernacularNames,
     onShowModalChange,
-    newVernacularName,
+    newVernacularNameFromVernacularNameDB,
+    updateVernacularNameFromVernacularNameDB,
+    deleteVernacularNameFromVernacularNameDB,
   } = props;
   const [scientific_name, setScientificName] = useState(
     updateData.scientific_name
@@ -24,7 +26,7 @@ function UpdateTree(props) {
     <div
       className={`${showUpdateTreeModal} modal absolute z-100 inset-0 h-screen flex justify-center items-center bg-gray-300 bg-opacity-20`}
     >
-      <div className="card bg-darkblue space-y-8 rounded-lg px-4 py-4 flex flex-col">
+      <div className="card bg-darkblue space-y-8 rounded-lg px-4 py-4 flex flex-col w-2/5">
         <div className="scientific-name flex flex-col py-2">
           <div className="py-2 text-white">
             <label>Scientific Name</label>
@@ -127,41 +129,23 @@ function UpdateTree(props) {
             </button>
           </div>
           <div className="vernacular-name-add py-2">
-            <div className="py-2">
-              <button
-                className="bg-lightgreen rounded-lg text-xs p-1 font-semibold"
-                onClick={() =>
-                  setshowNewVernacularNameInput(!showNewVernacularNameInput)
-                }
-              >
-                + ADD NEW VERNACULAR NAME
-              </button>
-            </div>
-            {showNewVernacularNameInput && (
-              <div className="input-area flex">
-                <input
-                  className="rounded-lg text-black"
-                  value={vernacularNameInput}
-                  onChange={(e) => setVernacularNameInput(e.target.value)}
-                />
-                <button
-                  onClick={() => {
-                    newVernacularName(vernacularNameInput);
-                  }}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    height="24px"
-                    viewBox="0 0 24 24"
-                    width="24px"
-                    className="fill-current text-darkyellow mx-2"
-                  >
-                    <path d="M0 0h24v24H0z" fill="none" />
-                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
-                  </svg>
-                </button>
-              </div>
-            )}
+            <VernacularNameDB
+              vernacularNames={vernacularNames}
+              newVernacularNameFromVernacularNameDB={(ret) => {
+                console.log("newVernacularNameFromVernacularNameDB");
+                console.log(ret);
+                newVernacularNameFromVernacularNameDB(ret);
+              }}
+              deleteVernacularNameFromVernacularNameDB={(ret) => {
+                console.log("deleteVernacularNameFromVernacularNameDB");
+                console.log(ret);
+                deleteVernacularNameFromVernacularNameDB(ret);
+              }}
+              updateVernacularNameFromVernacularNameDB={(ret) => {
+                console.log("updateVernacularNameFromVernacularNameDB");
+                updateVernacularNameFromVernacularNameDB(ret);
+              }}
+            ></VernacularNameDB>
           </div>
         </div>
         <div className="flex items-center justify-center">
