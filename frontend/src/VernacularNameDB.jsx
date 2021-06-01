@@ -14,15 +14,13 @@ function VernacularNameDB(props) {
     false
   );
   return (
-    <div className="bg-blue-500">
-      <p className="text-white">Vernacular DB Operations</p>
+    <div className="bg-purple-700 rounded-md">
       <div className="flex">
         <div>
           {vernacularNames.map((e, index) => (
             <div className="flex items-center" key={index}>
-              <p>{e.id}</p>
               <input
-                className="bg-pink-200 p-1 m-1"
+                className="p-1 m-1 rounded"
                 id={`input-${index}`}
                 defaultValue={e.vernacular_name}
                 onChange={(el) => {

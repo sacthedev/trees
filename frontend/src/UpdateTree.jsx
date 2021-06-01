@@ -18,15 +18,15 @@ function UpdateTree(props) {
   const [componentVernacularNames, setComponentVernacularNames] = useState(
     updateData.vernacular_names
   );
-  const [showNewVernacularNameInput, setshowNewVernacularNameInput] = useState(
-    false
-  );
-  const [vernacularNameInput, setVernacularNameInput] = useState("");
+  const [
+    showVernacularNameDBOperationsArea,
+    setShowVernacularNameDBOperationsArea,
+  ] = useState(false);
   return (
     <div
-      className={`${showUpdateTreeModal} modal absolute z-100 inset-0 h-screen flex justify-center items-center bg-gray-300 bg-opacity-20`}
+      className={`${showUpdateTreeModal} modal absolute z-100 inset-0 h-screen flex  justify-center items-center bg-gray-300 bg-opacity-20`}
     >
-      <div className="card bg-darkblue space-y-8 rounded-lg px-4 py-4 flex flex-col w-2/5">
+      <div className="card bg-darkblue space-y-8 rounded-lg px-4 py-4 flex flex-col overflow-auto">
         <div className="scientific-name flex flex-col py-2">
           <div className="py-2 text-white">
             <label>Scientific Name</label>
@@ -35,7 +35,7 @@ function UpdateTree(props) {
             <input
               type="text"
               value={scientific_name}
-              className="rounded-lg text-black"
+              className="rounded-lg text-black p-1"
               onChange={(e) => setScientificName(e.target.value)}
             />
           </div>
@@ -48,7 +48,7 @@ function UpdateTree(props) {
             <input
               value={primary_name}
               type="text"
-              className="rounded-lg text-black"
+              className="rounded-lg text-black p-1"
               onChange={(e) => setPrimaryName(e.target.value)}
             />
           </div>
@@ -57,7 +57,6 @@ function UpdateTree(props) {
           <div className="py-2 text-white">
             <label>Vernacular Names</label>
           </div>
-          <pre>{JSON.stringify(componentVernacularNames, null, 2)}</pre>
           <div>
             {componentVernacularNames.map((el, index) => (
               <div className="flex" key={index}>
@@ -129,23 +128,62 @@ function UpdateTree(props) {
             </button>
           </div>
           <div className="vernacular-name-add py-2">
-            <VernacularNameDB
-              vernacularNames={vernacularNames}
-              newVernacularNameFromVernacularNameDB={(ret) => {
-                console.log("newVernacularNameFromVernacularNameDB");
-                console.log(ret);
-                newVernacularNameFromVernacularNameDB(ret);
-              }}
-              deleteVernacularNameFromVernacularNameDB={(ret) => {
-                console.log("deleteVernacularNameFromVernacularNameDB");
-                console.log(ret);
-                deleteVernacularNameFromVernacularNameDB(ret);
-              }}
-              updateVernacularNameFromVernacularNameDB={(ret) => {
-                console.log("updateVernacularNameFromVernacularNameDB");
-                updateVernacularNameFromVernacularNameDB(ret);
-              }}
-            ></VernacularNameDB>
+            <div className="flex">
+              <button
+                className="text-white"
+                onClick={() => {
+                  setShowVernacularNameDBOperationsArea(
+                    !showVernacularNameDBOperationsArea
+                  );
+                }}
+              >
+                Vernacular DB Operations
+              </button>
+              {showVernacularNameDBOperationsArea ? (
+                <svg
+                  id="expand-more"
+                  xmlns="http://www.w3.org/2000/svg"
+                  height="24px"
+                  viewBox="0 0 24 24"
+                  width="24px"
+                  className="fill-current text-white"
+                >
+                  <path d="M24 24H0V0h24v24z" fill="none" opacity=".87" />
+                  <path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6-1.41-1.41z" />
+                </svg>
+              ) : (
+                <svg
+                  id="expand-less"
+                  xmlns="http://www.w3.org/2000/svg"
+                  height="24px"
+                  viewBox="0 0 24 24"
+                  width="24px"
+                  className="fill-current text-white"
+                >
+                  <path d="M0 0h24v24H0V0z" fill="none" />
+                  <path d="M12 8l-6 6 1.41 1.41L12 10.83l4.59 4.58L18 14l-6-6z" />
+                </svg>
+              )}
+            </div>
+            {showVernacularNameDBOperationsArea && (
+              <VernacularNameDB
+                vernacularNames={vernacularNames}
+                newVernacularNameFromVernacularNameDB={(ret) => {
+                  console.log("newVernacularNameFromVernacularNameDB");
+                  console.log(ret);
+                  newVernacularNameFromVernacularNameDB(ret);
+                }}
+                deleteVernacularNameFromVernacularNameDB={(ret) => {
+                  console.log("deleteVernacularNameFromVernacularNameDB");
+                  console.log(ret);
+                  deleteVernacularNameFromVernacularNameDB(ret);
+                }}
+                updateVernacularNameFromVernacularNameDB={(ret) => {
+                  console.log("updateVernacularNameFromVernacularNameDB");
+                  updateVernacularNameFromVernacularNameDB(ret);
+                }}
+              ></VernacularNameDB>
+            )}
           </div>
         </div>
         <div className="flex items-center justify-center">
