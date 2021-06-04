@@ -1,25 +1,28 @@
 import React, { useState } from "react";
-
+import VernacularNameDB from "./VernacularNameDB";
 function NewTree(props) {
   const {
     showModal,
     onShowModalChange,
     newTreeData,
     vernacularNames,
-    newVernacularName,
+    newVernacularNameFromVernacularNameDB,
+    updateVernacularNameFromVernacularNameDB,
+    deleteVernacularNameFromVernacularNameDB,
   } = props;
   const [scientific_name, setScientificName] = useState(0);
   const [primary_name, setPrimaryName] = useState(0);
   const [componentVernacularNames, setComponentVernacularNames] = useState([]);
-  const [showNewVernacularNameInput, setshowNewVernacularNameInput] = useState(
-    false
-  );
-  const [vernacularNameInput, setVernacularNameInput] = useState("");
+
+  const [
+    showVernacularNameDBOperationsArea,
+    setShowVernacularNameDBOperationsArea,
+  ] = useState(false);
   return (
     <div
       className={`${showModal} modal absolute z-100 inset-0 h-screen flex justify-center items-center bg-gray-300 bg-opacity-20`}
     >
-      <div className="card bg-darkblue space-y-8 rounded-lg px-4 py-4 flex flex-col">
+      <div className="card bg-darkblue space-y-8 rounded-lg px-4 py-4 flex flex-col overflow-auto">
         <div className="scientific-name flex flex-col py-2">
           <div className="py-2 text-white">
             <label>Scientific Name</label>
@@ -28,7 +31,7 @@ function NewTree(props) {
             <input
               type="text"
               value={scientific_name}
-              className="rounded-lg text-black"
+              className="rounded-lg text-black p-1"
               onChange={(e) => setScientificName(e.target.value)}
             />
           </div>
@@ -41,7 +44,7 @@ function NewTree(props) {
             <input
               value={primary_name}
               type="text"
-              className="rounded-lg text-black"
+              className="rounded-lg text-black p-1"
               onChange={(e) => setPrimaryName(e.target.value)}
             />
           </div>
@@ -118,40 +121,61 @@ function NewTree(props) {
             </button>
           </div>
           <div className="vernacular-name-add py-2">
-            <div className="py-2">
+            <div className="flex">
               <button
-                className="bg-lightgreen rounded-lg text-xs p-1 font-semibold"
-                onClick={() =>
-                  setshowNewVernacularNameInput(!showNewVernacularNameInput)
-                }
+                className="text-white"
+                onClick={() => {
+                  setShowVernacularNameDBOperationsArea(
+                    !showVernacularNameDBOperationsArea
+                  );
+                }}
               >
-                + ADD NEW VERNACULAR NAME
+                Vernacular DB Operations
               </button>
-            </div>
-            {showNewVernacularNameInput && (
-              <div className="input-area flex">
-                <input
-                  className="rounded-lg text-black"
-                  value={vernacularNameInput}
-                  onChange={(e) => setVernacularNameInput(e.target.value)}
-                />
-                <button
-                  onClick={() => {
-                    newVernacularName(vernacularNameInput);
-                  }}
+              {showVernacularNameDBOperationsArea ? (
+                <svg
+                  id="expand-more"
+                  xmlns="http://www.w3.org/2000/svg"
+                  height="24px"
+                  viewBox="0 0 24 24"
+                  width="24px"
+                  className="fill-current text-white"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    height="24px"
-                    viewBox="0 0 24 24"
-                    width="24px"
-                    className="fill-current text-darkyellow mx-2"
-                  >
-                    <path d="M0 0h24v24H0z" fill="none" />
-                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
-                  </svg>
-                </button>
-              </div>
+                  <path d="M24 24H0V0h24v24z" fill="none" opacity=".87" />
+                  <path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6-1.41-1.41z" />
+                </svg>
+              ) : (
+                <svg
+                  id="expand-less"
+                  xmlns="http://www.w3.org/2000/svg"
+                  height="24px"
+                  viewBox="0 0 24 24"
+                  width="24px"
+                  className="fill-current text-white"
+                >
+                  <path d="M0 0h24v24H0V0z" fill="none" />
+                  <path d="M12 8l-6 6 1.41 1.41L12 10.83l4.59 4.58L18 14l-6-6z" />
+                </svg>
+              )}
+            </div>
+            {showVernacularNameDBOperationsArea && (
+              <VernacularNameDB
+                vernacularNames={vernacularNames}
+                newVernacularNameFromVernacularNameDB={(ret) => {
+                  console.log("newVernacularNameFromVernacularNameDB");
+                  console.log(ret);
+                  newVernacularNameFromVernacularNameDB(ret);
+                }}
+                deleteVernacularNameFromVernacularNameDB={(ret) => {
+                  console.log("deleteVernacularNameFromVernacularNameDB");
+                  console.log(ret);
+                  deleteVernacularNameFromVernacularNameDB(ret);
+                }}
+                updateVernacularNameFromVernacularNameDB={(ret) => {
+                  console.log("updateVernacularNameFromVernacularNameDB");
+                  updateVernacularNameFromVernacularNameDB(ret);
+                }}
+              ></VernacularNameDB>
             )}
           </div>
         </div>

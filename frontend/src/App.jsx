@@ -302,11 +302,20 @@ function App() {
     <div className="App font-sans">
       {vernacularNames && (
         <NewTree
+          newTreeData={(ret) => sendNewTrees(ret)}
+          onShowModalChange={(ret) => setShowModal(ret)}
           vernacularNames={vernacularNames}
           showModal={showModal}
-          onShowModalChange={(ret) => setShowModal(ret)}
-          newTreeData={(ret) => sendNewTrees(ret)}
           newVernacularName={(ret) => sendNewVernacularName(ret)}
+          newVernacularNameFromVernacularNameDB={(ret) =>
+            sendNewVernacularName(ret)
+          }
+          updateVernacularNameFromVernacularNameDB={(ret) =>
+            updateVernacularName(ret)
+          }
+          deleteVernacularNameFromVernacularNameDB={(ret) => {
+            deleteVernacularName(ret);
+          }}
         ></NewTree>
       )}
       {showUpdateTreeModal === "" && (
