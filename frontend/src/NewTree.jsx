@@ -22,7 +22,7 @@ function NewTree(props) {
     <div
       className={`${showModal} modal absolute z-100 inset-0 h-screen flex justify-center items-center bg-gray-300 bg-opacity-20`}
     >
-      <div className="card bg-darkblue space-y-8 rounded-lg px-4 py-4 flex flex-col overflow-auto">
+      <div className="card bg-darkblue space-y-8 rounded-lg px-4 py-4 flex flex-col h-5/6 overflow-auto">
         <div className="scientific-name flex flex-col py-2">
           <div className="py-2 text-white">
             <label>Scientific Name</label>
