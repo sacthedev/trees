@@ -1,4 +1,4 @@
-const {app, BrowserWindow} = require('electron');
+import { app, BrowserWindow } from 'electron';
 
 const URL = 'http://localhost:3000';
 

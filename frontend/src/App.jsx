@@ -2,100 +2,16 @@ import React, { useEffect, useState } from "react";
 import { useQuery, useMutation, gql } from "@apollo/client";
 import NewTree from "./NewTree";
 import UpdateTree from "./UpdateTree";
-
-const ALL_VERNACULAR_NAMES = gql`
-  query GetAllVernacularNames {
-    getAllVernacularNames {
-      id
-      vernacular_name
-    }
-  }
-`;
-
-const ALL_TREES = gql`
-  query GetAllTrees {
-    getAllTrees {
-      id
-      primary_name
-      scientific_name
-      vernacular_names {
-        id
-        vernacular_name
-      }
-    }
-  }
-`;
-const INSERT_TREE = gql`
-  mutation InsertTree(
-    $primary_name: String
-    $scientific_name: String
-    $vernacular_names: [vernacular_name_input]
-  ) {
-    insertTree(
-      primary_name: $primary_name
-      scientific_name: $scientific_name
-      vernacular_names: $vernacular_names
-    ) {
-      id
-      primary_name
-      scientific_name
-    }
-  }
-`;
-
-const DELETE_TREE_WITH_ID = gql`
-  mutation DeleteTreeWithID($id: ID!) {
-    deleteTreeWithID(id: $id)
-  }
-`;
-
-const UPDATE_TREE_WITH_ID = gql`
-  mutation UpdateTreeWithID(
-    $id: ID!
-    $primary_name: String
-    $scientific_name: String
-    $vernacular_names: [vernacular_name_input]
-  ) {
-    updateTreeWithID(
-      id: $id
-      primary_name: $primary_name
-      scientific_name: $scientific_name
-      vernacular_names: $vernacular_names
-    ) {
-      id
-      primary_name
-      scientific_name
-      vernacular_names {
-        id
-        vernacular_name
-      }
-    }
-  }
-`;
-
-const INSERT_NEW_VERNACULAR_NAME = gql`
-  mutation InsertVernacularName($vernacular_name: String) {
-    insertVernacularName(vernacular_name: $vernacular_name) {
-      id
-      vernacular_name
-    }
-  }
-`;
-
-const UPDATE_VERNACULAR_NAME_WITH_ID = gql`
-  mutation UpdateVernacularNameWithId($id: ID, $vernacular_name: String) {
-    updateVernacularNameWithId(id: $id, vernacular_name: $vernacular_name) {
-      id
-      vernacular_name
-    }
-  }
-`;
-
-const DELETE_VERNACULAR_NAME_WITH_ID = gql`
-  mutation DeleteVernacularNameWithId($id: ID) {
-    deleteVernacularNameWithId(id: $id)
-  }
-`;
+import {
+  ALL_VERNACULAR_NAMES,
+  ALL_TREES,
+  INSERT_TREE,
+  DELETE_TREE_WITH_ID,
+  UPDATE_TREE_WITH_ID,
+  INSERT_NEW_VERNACULAR_NAME,
+  UPDATE_VERNACULAR_NAME_WITH_ID,
+  DELETE_VERNACULAR_NAME_WITH_ID
+} from "./graphql_schema";
 
 function App() {
   const [headers, setHeaders] = useState([
@@ -119,8 +35,6 @@ function App() {
   const [showUpdateTreeModal, setShowUpdateTreeModal] = useState("hidden");
   const [insertVernacularName] = useMutation(INSERT_NEW_VERNACULAR_NAME, {
     update(cache, { data: { insertVernacularName } }) {
-      console.log("cache: ", cache);
-      console.log("data: ", insertVernacularName);
       cache.modify({
         fields: {
           getAllVernacularNames(existingVernacularNames = []) {
@@ -141,8 +55,6 @@ function App() {
   });
   const [insertTree] = useMutation(INSERT_TREE, {
     update(cache, { data: { insertTree } }) {
-      console.log("cache: ", cache);
-      console.log("data: ", insertTree);
       cache.modify({
         fields: {
           getAllTrees(existingTrees = []) {
@@ -156,8 +68,6 @@ function App() {
                 }
               `,
             });
-            console.log("existingTrees: ", existingTrees);
-            console.log("newTreeRef: ", newTreeRef);
             return [...existingTrees, newTreeRef];
           },
         },
@@ -169,8 +79,6 @@ function App() {
     DELETE_VERNACULAR_NAME_WITH_ID,
     {
       update(cache, { data: { deleteVernacularNameWithId } }) {
-        console.log("cache: ", cache);
-        console.log("deleteVernacularNameWithId: ", deleteVernacularNameWithId);
         cache.modify({
           fields: {
             getAllVernacularNames(existingVernacularNames, { readField }) {
@@ -187,8 +95,6 @@ function App() {
   );
   const [deleteTreeWithID] = useMutation(DELETE_TREE_WITH_ID, {
     update(cache, { data: { deleteTreeWithID } }) {
-      console.log("cache: ", cache);
-      console.log("deleteTreeWithId: ", deleteTreeWithID);
       cache.modify({
         fields: {
           getAllTrees(existingTrees, { readField }) {
@@ -206,29 +112,21 @@ function App() {
     UPDATE_VERNACULAR_NAME_WITH_ID
   );
   useEffect(() => {
-    console.log("*******useEffect ALL_TREES*********");
     if (!treeDataLoading && treesData.getAllTrees) {
       setTrees(treesData.getAllTrees);
-      console.log("treeData: ", treesData);
     }
-    console.log("*************************");
   }, [treesData, treeDataLoading]);
 
   useEffect(() => {
-    console.log("*******useEffect ALL_VERNACULAR_NAMES*********");
     if (
       !vernacularNamesDataLoading &&
       vernacularNamesData.getAllVernacularNames
     ) {
       setVernacularNames(vernacularNamesData.getAllVernacularNames);
-      console.log("vernacularNamesData: ", vernacularNamesData);
     }
-    console.log("*************************");
   }, [vernacularNamesData, vernacularNamesDataLoading]);
 
   function sendNewVernacularName(newVernacularNameData) {
-    console.log("sendNewVernacularName");
-    console.log(newVernacularNameData);
     insertVernacularName({
       variables: {
         vernacular_name: newVernacularNameData,
@@ -237,8 +135,6 @@ function App() {
   }
 
   function updateVernacularName(updatedVernacularNameData) {
-    console.log("App.jsx -> func -> updateVernacularName");
-    console.log(updatedVernacularNameData);
     updateVernacularNameWithId({
       variables: {
         ...updatedVernacularNameData,
@@ -246,21 +142,17 @@ function App() {
     });
   }
   function deleteVernacularName(id) {
-    console.log("App.jsx -> func -> deleteVernacularName");
     deleteVernacularNameWithId({
       variables: { id },
     });
   }
   function sendNewTrees(d) {
-    console.log("sendNewTrees");
-    console.log(d);
     //remove __typename from d.vernacular_names
     let temp = [];
     d.vernacular_names.map((el) => {
       temp.push({ id: el.id, vernacular_name: el.vernacular_name });
     });
     d["vernacular_names"] = temp;
-    console.log("toSend: ", JSON.stringify(d));
     insertTree({
       variables: {
         primary_name: d.primary_name,
@@ -272,7 +164,6 @@ function App() {
   }
 
   function deleteTree(id) {
-    console.log("delete tree -> id", id);
     deleteTreeWithID({
       variables: {
         id,
@@ -288,7 +179,6 @@ function App() {
     });
     dataPayload["vernacular_names"] = temp;
     const { id, primary_name, scientific_name, vernacular_names } = dataPayload;
-    console.log("UPDATE TREE WITH ID -> ", dataPayload);
     updateTreeWithID({
       variables: {
         id,
