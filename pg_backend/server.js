@@ -1,22 +1,18 @@
 // const express = require('express');
-const {knex} = require('knex');
-const knexFile = require('./knexfile').development;
 const {graphqlHTTP} = require('express-graphql');
 const {buildSchema} = require('graphql');
 const cors = require('cors');
 const express = require('express');
 const {
   funcGetAllTrees,
-  funcGetTreeWithId,
-  funcInsertTreeWithVernacularNames,
-  funcUpdateTreeWithoutVernacularNames,
-  funcUpdateTreeWithVernacularNames,
-  funcDeleteTreeWithId,
+  funcGetTreeWithID,
+  funcInsertTree,
+  funcUpdateTreeWithID,
+  funcDeleteTreeWithID,
 } = require('./functions/basic_tree.js');
 const {
   funcGetAllVernacularName,
   funcInsertVernacularName,
-  funcUpdateVernacularName,
   funcDeleteVernacularNameWithId,
 } = require('./functions/vernacular_name');
 
@@ -49,23 +45,17 @@ const schema = buildSchema(`
   type Query {
     getAllVernacularNames: [vernacular_name],
     getAllTrees: [final_tree],
-    getTreeWithId(id:ID!): final_tree,
+    getTreeWithID(id:ID!): final_tree,
   }
   
   type Mutation {
-    insertTreeWithVernacularNames(
+    insertTree(
       primary_name: String,
       scientific_name: String,
       vernacular_names: [ vernacular_name_input ],
       ): final_tree,
 
-    updateTreeWithoutVernacularNames(
-      id: ID!,
-      primary_name: String,
-      scientific_name: String,
-      ): final_tree,
-    
-    updateTreeWithVernacularNames(
+    updateTreeWithID(
       id: ID!,
       primary_name: String,
       scientific_name: String,
@@ -81,26 +71,19 @@ const schema = buildSchema(`
       basicTreeId: ID
     ):ID,
 
-    updateVernacularNameWithId(
-      id: ID,
-      vernacular_name: String,
-    ): vernacular_name
-
     deleteVernacularNameWithId(id: ID): ID,
 
-    deleteTreeWithId(id: ID!): ID,
+    deleteTreeWithID(id: ID!): ID,
   }
      `);
 
 const root = {
   getAllTrees: funcGetAllTrees,
   getAllVernacularNames: funcGetAllVernacularName,
-  getTreeWithId: funcGetTreeWithId,
-  insertTreeWithVernacularNames: funcInsertTreeWithVernacularNames,
-  updateTreeWithoutVernacularNames: funcUpdateTreeWithoutVernacularNames,
-  updateTreeWithVernacularNames: funcUpdateTreeWithVernacularNames,
-  updateVernacularNameWithId: funcUpdateVernacularName,
-  deleteTreeWithId: funcDeleteTreeWithId,
+  getTreeWithID: funcGetTreeWithID,
+  insertTree: funcInsertTree,
+  updateTreeWithID: funcUpdateTreeWithID,
+  deleteTreeWithID: funcDeleteTreeWithID,
   deleteVernacularNameWithId: funcDeleteVernacularNameWithId,
   insertVernacularName: funcInsertVernacularName,
   insertVernacularNameReference: funcInsertVernacularNameReference,
