@@ -1,4 +1,5 @@
-import { app, BrowserWindow } from 'electron';
+/* eslint-disable require-jsdoc */
+const {app, BrowserWindow} = require('electron');
 
 const URL = 'http://localhost:3000';
 

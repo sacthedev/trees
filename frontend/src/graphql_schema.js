@@ -95,7 +95,7 @@ const DELETE_VERNACULAR_NAME_WITH_ID = gql`
 `;
 
 
-module.exports  = {
+export {
     ALL_VERNACULAR_NAMES,
     ALL_TREES,
     INSERT_TREE,
