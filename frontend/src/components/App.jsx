@@ -11,7 +11,7 @@ import {
   INSERT_NEW_VERNACULAR_NAME,
   UPDATE_VERNACULAR_NAME_WITH_ID,
   DELETE_VERNACULAR_NAME_WITH_ID
-} from "./graphql_schema";
+} from "../graphql_schema";
 
 function App() {
   const [headers, setHeaders] = useState([
