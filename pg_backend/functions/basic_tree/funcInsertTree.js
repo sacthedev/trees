@@ -2,7 +2,7 @@ const {knex} = require('knex');
 const knexFile = require('../../knexfile').development;
 const db = knex(knexFile);
 
-const {funcGetTreeWithId} = require('./funcGetTreeWithID');
+const {funcGetTreeWithID} = require('./funcGetTreeWithID');
 const {
   funcGetAllVernacularName,
   funcInsertVernacularName,
@@ -27,6 +27,7 @@ const funcInsertTree = async ({
 
   // insert vernacular name references to basic tree
   if (vernacular_names === undefined) {
+    console.log('vernacular_names === undefined');
     vernacular_names = [];
   }
   vernacular_names = JSON.parse(JSON.stringify(vernacular_names));
@@ -51,15 +52,17 @@ const funcInsertTree = async ({
     await Promise.all(
         // insert names not in vernacular name table whilst pushing ids to idsToReference
         namesToInsert.map(async (nameObject) => {
-          const returnedId = await funcInsertVernacularName(nameObject);
-          console.log('returnedId: ', returnedId);
-          idsToReference.push(returnedId[0]);
+          const returnedVernacularNameObject = await funcInsertVernacularName(
+              nameObject,
+          );
+          idsToReference.push(returnedVernacularNameObject.id);
         }),
     );
 
     await Promise.all(
         // insert vernacular_name_reference ids for this tree
         idsToReference.map(async (vernacular_name_id) => {
+          console.log('idsToReference: ', idsToReference);
           await funcInsertVernacularNameReference({
             vernacular_name_id,
             basicTreeId,
@@ -68,7 +71,7 @@ const funcInsertTree = async ({
     );
   }
 
-  return funcGetTreeWithId(basicTreeId);
+  return funcGetTreeWithID(basicTreeId);
 };
 
 const checkNameIn = (allVernacularNames, vernacularName) => {

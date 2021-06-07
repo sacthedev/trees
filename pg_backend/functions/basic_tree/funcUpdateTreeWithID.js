@@ -2,7 +2,7 @@ const {knex} = require('knex');
 const knexFile = require('../../knexfile').development;
 const db = knex(knexFile);
 
-const {funcGetTreeWithId} = require('./funcGetTreeWithID');
+const {funcGetTreeWithID} = require('./funcGetTreeWithID');
 
 const {
   funcDeleteVernacularNameReferenceWithBasicTreeId,
@@ -21,9 +21,17 @@ const funcUpdateTreeWithID = async ({
   primary_name,
   vernacular_names,
 }) => {
-  await db(TABLENAME)
-      .where('id', id)
-      .update({scientific_name: scientific_name, primary_name: primary_name});
+  let updateObject = {};
+
+  if (scientific_name != undefined && scientific_name.length > 0) {
+    updateObject = {...updateObject, scientific_name: scientific_name};
+  }
+
+  if (primary_name != undefined && primary_name.length > 0) {
+    updateObject = {...updateObject, primary_name: primary_name};
+  }
+
+  await db(TABLENAME).where('id', id).update(updateObject);
 
   // delete all vernacular_references to this tree_id
   await funcDeleteVernacularNameReferenceWithBasicTreeId(id);
@@ -55,7 +63,7 @@ const funcUpdateTreeWithID = async ({
         }),
     );
   }
-  return funcGetTreeWithId(id);
+  return funcGetTreeWithID(id);
 };
 
 module.exports = {

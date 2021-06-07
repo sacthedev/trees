@@ -26,12 +26,12 @@ const ALL_TREES = gql`
   }
 `;
 const INSERT_TREE = gql`
-  mutation InsertTreeWithVernacularNames(
+  mutation InsertTree(
     $primary_name: String
     $scientific_name: String
     $vernacular_names: [vernacular_name_input]
   ) {
-    insertTreeWithVernacularNames(
+    insertTree(
       primary_name: $primary_name
       scientific_name: $scientific_name
       vernacular_names: $vernacular_names
@@ -44,19 +44,19 @@ const INSERT_TREE = gql`
 `;
 
 const DELETE_TREE_WITH_ID = gql`
-  mutation DeleteTreeWithId($id: ID!) {
-    deleteTreeWithId(id: $id)
+  mutation DeleteTreeWithID($id: ID!) {
+    deleteTreeWithID(id: $id)
   }
 `;
 
 const UPDATE_TREE_WITH_ID = gql`
-  mutation UpdateTreeWithVernacularNames(
+  mutation UpdateTreeWithID(
     $id: ID!
     $primary_name: String
     $scientific_name: String
     $vernacular_names: [vernacular_name_input]
   ) {
-    updateTreeWithVernacularNames(
+    updateTreeWithID(
       id: $id
       primary_name: $primary_name
       scientific_name: $scientific_name
@@ -139,15 +139,15 @@ function App() {
       });
     },
   });
-  const [insertTreeWithVernacularNames] = useMutation(INSERT_TREE, {
-    update(cache, { data: { insertTreeWithVernacularNames } }) {
+  const [insertTree] = useMutation(INSERT_TREE, {
+    update(cache, { data: { insertTree } }) {
       console.log("cache: ", cache);
-      console.log("data: ", insertTreeWithVernacularNames);
+      console.log("data: ", insertTree);
       cache.modify({
         fields: {
           getAllTrees(existingTrees = []) {
             const newTreeRef = cache.writeFragment({
-              data: insertTreeWithVernacularNames,
+              data: insertTree,
               fragment: gql`
                 fragment NewTree on final_tree {
                   id
@@ -185,22 +185,22 @@ function App() {
       },
     }
   );
-  const [deleteTreeWithId] = useMutation(DELETE_TREE_WITH_ID, {
-    update(cache, { data: { deleteTreeWithId } }) {
+  const [deleteTreeWithID] = useMutation(DELETE_TREE_WITH_ID, {
+    update(cache, { data: { deleteTreeWithID } }) {
       console.log("cache: ", cache);
-      console.log("deleteTreeWithId: ", deleteTreeWithId);
+      console.log("deleteTreeWithId: ", deleteTreeWithID);
       cache.modify({
         fields: {
           getAllTrees(existingTrees, { readField }) {
             return existingTrees.filter(
-              (treeRef) => deleteTreeWithId !== readField("id", treeRef)
+              (treeRef) => deleteTreeWithID !== readField("id", treeRef)
             );
           },
         },
       });
     },
   });
-  const [updateTreeWithId] = useMutation(UPDATE_TREE_WITH_ID);
+  const [updateTreeWithID] = useMutation(UPDATE_TREE_WITH_ID);
 
   const [updateVernacularNameWithId] = useMutation(
     UPDATE_VERNACULAR_NAME_WITH_ID
@@ -261,7 +261,7 @@ function App() {
     });
     d["vernacular_names"] = temp;
     console.log("toSend: ", JSON.stringify(d));
-    insertTreeWithVernacularNames({
+    insertTree({
       variables: {
         primary_name: d.primary_name,
         scientific_name: d.scientific_name,
@@ -273,7 +273,7 @@ function App() {
 
   function deleteTree(id) {
     console.log("delete tree -> id", id);
-    deleteTreeWithId({
+    deleteTreeWithID({
       variables: {
         id,
       },
@@ -289,7 +289,7 @@ function App() {
     dataPayload["vernacular_names"] = temp;
     const { id, primary_name, scientific_name, vernacular_names } = dataPayload;
     console.log("UPDATE TREE WITH ID -> ", dataPayload);
-    updateTreeWithId({
+    updateTreeWithID({
       variables: {
         id,
         primary_name,
